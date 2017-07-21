@@ -79,17 +79,17 @@ namespace Lykke.Service.RateCalculator.Tests
         [Fact]
         public async Task IS_GetAmountInBase_List_Correct()
         {
-            var balances = new List<Tuple<string, double>>
+            var balances = new List<BalanceRecord>
             {
-                new Tuple<string, double>("CHF", 10),
-                new Tuple<string, double>("BTC", 1)
+                new BalanceRecord{AssetId = "CHF", Balance = 10},
+                new BalanceRecord{AssetId = "BTC", Balance = 1}
             };
 
             var balancesWithBaseAsset = (await _service.GetAmountInBase(balances, "USD")).ToList();
 
             Assert.Equal(2, balancesWithBaseAsset.Count);
-            Assert.Equal(10.14, balancesWithBaseAsset[0].Item2);
-            Assert.Equal(2652, balancesWithBaseAsset[1].Item2);
+            Assert.Equal(10.14, balancesWithBaseAsset[0].Balance);
+            Assert.Equal(2652, balancesWithBaseAsset[1].Balance);
         }
 
         [Fact]
