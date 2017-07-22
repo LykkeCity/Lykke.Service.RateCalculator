@@ -103,7 +103,7 @@ namespace Lykke.Service.RateCalculator.Tests
 
             marketProfile.Profile = feedData;
 
-            var amountInBase = await _service.GetAmountInBase("BTC", 1, "USD", marketProfile);
+            var amountInBase = await _service.GetAmountInBaseWithProfile("BTC", 1, "USD", marketProfile);
             Assert.Equal(2652, amountInBase);
         }
 
@@ -118,7 +118,7 @@ namespace Lykke.Service.RateCalculator.Tests
 
             marketProfile.Profile = feedData;
 
-            var amountInBase = await _service.GetAmountInBase("CHF", 1, "USD", marketProfile);
+            var amountInBase = await _service.GetAmountInBaseWithProfile("CHF", 1, "USD", marketProfile);
             Assert.Equal(1.01, amountInBase);
         }
 

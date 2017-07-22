@@ -48,7 +48,7 @@ namespace Lykke.Service.RateCalculator.Services
                     AssetId = record.AssetId,
                     Balance = record.Balance,
                     BaseAssetId = baseAssetId,
-                    AmountInBase = await GetAmountInBase(record.AssetId, record.Balance, baseAssetId, marketProfile)
+                    AmountInBase = await GetAmountInBaseWithProfile(record.AssetId, record.Balance, baseAssetId, marketProfile)
                 });
             }
 
@@ -70,13 +70,39 @@ namespace Lykke.Service.RateCalculator.Services
 
             foreach (var record in balanceRecords)
             {
-                result.Add(new BalanceRecord{AssetId = toAssetId, Balance = await GetAmountInBase(record.AssetId, record.Balance, toAssetId, marketProfile)});
+                result.Add(new BalanceRecord{AssetId = toAssetId, Balance = await GetAmountInBaseWithProfile(record.AssetId, record.Balance, toAssetId, marketProfile)});
             }
 
             return result;
         }
 
-        public async Task<double> GetAmountInBase(string assetFrom, double amount, string assetTo, MarketProfile marketProfile = default(MarketProfile))
+        public async Task<double> GetAmountInBase(string assetFrom, double amount, string assetTo)
+        {
+            var marketProfileData = await _bestPriceRepository.GetAsync();
+
+            if (assetFrom == assetTo)
+                return amount;
+
+            var assetPair = (await _assetPairsDict.Values()).PairWithAssets(assetFrom, assetTo);
+
+            if (Math.Abs(amount) < double.Epsilon || assetPair == null ||
+                marketProfileData.Profile.All(x => x.Asset != assetPair.Id))
+                return 0;
+
+            var profile = marketProfileData.Profile.First(x => x.Asset == assetPair.Id);
+            var bestPrice = assetPair.IsInverted(assetTo) ? profile.Bid : profile.Ask;
+
+            if (Math.Abs(bestPrice) < double.Epsilon)
+                return 0;
+
+            var toAsset = await _assetsDict.GetItemAsync(assetTo);
+
+            var price = assetPair.BaseAssetId == assetFrom ? bestPrice : 1 / bestPrice;
+
+            return (price * amount).TruncateDecimalPlaces(toAsset.Accuracy);
+        }
+
+        public async Task<double> GetAmountInBaseWithProfile(string assetFrom, double amount, string assetTo, MarketProfile marketProfile)
         {
             var marketProfileData = marketProfile ?? await _bestPriceRepository.GetAsync();
 

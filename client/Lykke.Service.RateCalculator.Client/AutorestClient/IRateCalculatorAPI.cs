@@ -76,6 +76,22 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient
         /// </param>
         Task<HttpOperationResponse<double?>> ApiRateCalculatorGetAmountInBaseByAssetFromByAssetToByAmountPostWithHttpMessagesAsync(string assetFrom, string assetTo, double amount, MarketProfile marketProfile = default(MarketProfile), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
+        /// <param name='assetFrom'>
+        /// </param>
+        /// <param name='assetTo'>
+        /// </param>
+        /// <param name='amount'>
+        /// </param>
+        /// <param name='marketProfile'>
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        Task<HttpOperationResponse<double?>> ApiRateCalculatorGetAmountInBaseWithProfileByAssetFromByAssetToByAmountPostWithHttpMessagesAsync(string assetFrom, string assetTo, double amount, MarketProfile marketProfile = default(MarketProfile), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+
         /// <param name='toAssetId'>
         /// </param>
         /// <param name='balanceRecords'>

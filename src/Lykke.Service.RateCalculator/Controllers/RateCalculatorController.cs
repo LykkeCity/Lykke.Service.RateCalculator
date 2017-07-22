@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Lykke.Service.RateCalculator.Client;
 using Lykke.Service.RateCalculator.Core.Domain;
 using Lykke.Service.RateCalculator.Core.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -30,6 +31,13 @@ namespace Lykke.Service.RateCalculator.Controllers
         public async Task<double> GetAmountInBase(string assetFrom, string assetTo, double amount, [FromBody]MarketProfile marketProfile = null)
         {
             return await _rateCalculatorService.GetAmountInBase(assetFrom, amount, assetTo);
+        }
+
+        [HttpPost]
+        [Route("GetAmountInBaseWithProfile/{assetFrom}/{assetTo}/{amount}")]
+        public async Task<double> GetAmountInBaseWithProfile(string assetFrom, string assetTo, double amount, [FromBody]MarketProfile marketProfile)
+        {
+            return await _rateCalculatorService.GetAmountInBaseWithProfile(assetFrom, amount, assetTo, marketProfile);
         }
 
         [HttpPost]

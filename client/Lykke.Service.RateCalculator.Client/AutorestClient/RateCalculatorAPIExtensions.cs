@@ -121,6 +121,44 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient
             /// <param name='operations'>
             /// The operations group for this extension method.
             /// </param>
+            /// <param name='assetFrom'>
+            /// </param>
+            /// <param name='assetTo'>
+            /// </param>
+            /// <param name='amount'>
+            /// </param>
+            /// <param name='marketProfile'>
+            /// </param>
+            public static double? ApiRateCalculatorGetAmountInBaseWithProfileByAssetFromByAssetToByAmountPost(this IRateCalculatorAPI operations, string assetFrom, string assetTo, double amount, MarketProfile marketProfile = default(MarketProfile))
+            {
+                return operations.ApiRateCalculatorGetAmountInBaseWithProfileByAssetFromByAssetToByAmountPostAsync(assetFrom, assetTo, amount, marketProfile).GetAwaiter().GetResult();
+            }
+
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='assetFrom'>
+            /// </param>
+            /// <param name='assetTo'>
+            /// </param>
+            /// <param name='amount'>
+            /// </param>
+            /// <param name='marketProfile'>
+            /// </param>
+            /// <param name='cancellationToken'>
+            /// The cancellation token.
+            /// </param>
+            public static async Task<double?> ApiRateCalculatorGetAmountInBaseWithProfileByAssetFromByAssetToByAmountPostAsync(this IRateCalculatorAPI operations, string assetFrom, string assetTo, double amount, MarketProfile marketProfile = default(MarketProfile), CancellationToken cancellationToken = default(CancellationToken))
+            {
+                using (var _result = await operations.ApiRateCalculatorGetAmountInBaseWithProfileByAssetFromByAssetToByAmountPostWithHttpMessagesAsync(assetFrom, assetTo, amount, marketProfile, null, cancellationToken).ConfigureAwait(false))
+                {
+                    return _result.Body;
+                }
+            }
+
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
             /// <param name='toAssetId'>
             /// </param>
             /// <param name='balanceRecords'>
