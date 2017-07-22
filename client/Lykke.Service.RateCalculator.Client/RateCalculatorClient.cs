@@ -84,11 +84,25 @@ namespace Lykke.Service.RateCalculator.Client
             return Array.Empty<BalanceRecord>();
         }
 
-        public async Task<double> GetAmountInBaseAsync(string assetFrom, double amount, string assetTo, MarketProfile marketProfile = null)
+        public async Task<double> GetAmountInBaseAsync(string assetFrom, double amount, string assetTo)
         {
             try
             {
-                return await _service.ApiRateCalculatorGetAmountInBaseByAssetFromByAssetToByAmountPostAsync(assetFrom, assetTo, amount, marketProfile) ?? 0;
+                return await _service.ApiRateCalculatorGetAmountInBaseByAssetFromByAssetToByAmountPostAsync(assetFrom, assetTo, amount) ?? 0;
+            }
+            catch (Exception ex)
+            {
+                await _log.WriteErrorAsync(nameof(RateCalculatorClient), nameof(GetAmountInBaseAsync), $"assetFrom = {assetFrom}, assetTo = {assetTo}, amount = {amount}", ex);
+            }
+
+            return 0;
+        }
+
+        public async Task<double> GetAmountInBaseWithProfileAsync(string assetFrom, double amount, string assetTo, MarketProfile marketProfile)
+        {
+            try
+            {
+                return await _service.ApiRateCalculatorGetAmountInBaseWithProfileByAssetFromByAssetToByAmountPostAsync(assetFrom, assetTo, amount, marketProfile) ?? 0;
             }
             catch (Exception ex)
             {
