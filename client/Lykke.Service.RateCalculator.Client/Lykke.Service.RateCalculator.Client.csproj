@@ -25,7 +25,6 @@
 
   <ItemGroup>
     <Folder Include="AutorestClient\" />
-    <Folder Include="AutorestClient\Models\" />
     <Folder Include="Models\" />
   </ItemGroup>
 

@@ -89,11 +89,9 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient
             /// </param>
             /// <param name='amount'>
             /// </param>
-            /// <param name='marketProfile'>
-            /// </param>
-            public static double? ApiRateCalculatorGetAmountInBaseByAssetFromByAssetToByAmountPost(this IRateCalculatorAPI operations, string assetFrom, string assetTo, double amount, MarketProfile marketProfile = default(MarketProfile))
+            public static double? ApiRateCalculatorGetAmountInBaseByAssetFromByAssetToByAmountPost(this IRateCalculatorAPI operations, string assetFrom, string assetTo, double amount)
             {
-                return operations.ApiRateCalculatorGetAmountInBaseByAssetFromByAssetToByAmountPostAsync(assetFrom, assetTo, amount, marketProfile).GetAwaiter().GetResult();
+                return operations.ApiRateCalculatorGetAmountInBaseByAssetFromByAssetToByAmountPostAsync(assetFrom, assetTo, amount).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -105,14 +103,12 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient
             /// </param>
             /// <param name='amount'>
             /// </param>
-            /// <param name='marketProfile'>
-            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<double?> ApiRateCalculatorGetAmountInBaseByAssetFromByAssetToByAmountPostAsync(this IRateCalculatorAPI operations, string assetFrom, string assetTo, double amount, MarketProfile marketProfile = default(MarketProfile), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<double?> ApiRateCalculatorGetAmountInBaseByAssetFromByAssetToByAmountPostAsync(this IRateCalculatorAPI operations, string assetFrom, string assetTo, double amount, CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.ApiRateCalculatorGetAmountInBaseByAssetFromByAssetToByAmountPostWithHttpMessagesAsync(assetFrom, assetTo, amount, marketProfile, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.ApiRateCalculatorGetAmountInBaseByAssetFromByAssetToByAmountPostWithHttpMessagesAsync(assetFrom, assetTo, amount, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }

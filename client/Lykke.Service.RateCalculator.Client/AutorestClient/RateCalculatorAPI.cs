@@ -412,8 +412,6 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient
         /// </param>
         /// <param name='amount'>
         /// </param>
-        /// <param name='marketProfile'>
-        /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
         /// </param>
@@ -435,7 +433,7 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<double?>> ApiRateCalculatorGetAmountInBaseByAssetFromByAssetToByAmountPostWithHttpMessagesAsync(string assetFrom, string assetTo, double amount, MarketProfile marketProfile = default(MarketProfile), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<double?>> ApiRateCalculatorGetAmountInBaseByAssetFromByAssetToByAmountPostWithHttpMessagesAsync(string assetFrom, string assetTo, double amount, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (assetFrom == null)
             {
@@ -455,7 +453,6 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient
                 tracingParameters.Add("assetFrom", assetFrom);
                 tracingParameters.Add("assetTo", assetTo);
                 tracingParameters.Add("amount", amount);
-                tracingParameters.Add("marketProfile", marketProfile);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "ApiRateCalculatorGetAmountInBaseByAssetFromByAssetToByAmountPost", tracingParameters);
             }
@@ -487,12 +484,6 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient
 
             // Serialize Request
             string _requestContent = null;
-            if(marketProfile != null)
-            {
-                _requestContent = SafeJsonConvert.SerializeObject(marketProfile, SerializationSettings);
-                _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
-                _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
-            }
             // Send Request
             if (_shouldTrace)
             {

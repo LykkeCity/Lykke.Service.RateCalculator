@@ -28,7 +28,7 @@ namespace Lykke.Service.RateCalculator.Controllers
 
         [HttpPost]
         [Route("GetAmountInBase/{assetFrom}/{assetTo}/{amount}")]
-        public async Task<double> GetAmountInBase(string assetFrom, string assetTo, double amount, [FromBody]MarketProfile marketProfile = null)
+        public async Task<double> GetAmountInBase(string assetFrom, string assetTo, double amount)
         {
             return await _rateCalculatorService.GetAmountInBase(assetFrom, amount, assetTo);
         }
