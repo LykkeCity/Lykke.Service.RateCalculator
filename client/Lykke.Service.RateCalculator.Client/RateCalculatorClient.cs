@@ -125,5 +125,19 @@ namespace Lykke.Service.RateCalculator.Client
 
             return null;
         }
+
+        public async Task<MarketProfile> GetMarketProfileAsync()
+        {
+            try
+            {
+                return await _service.ApiRateCalculatorGetMarketProfileGetAsync();
+            }
+            catch (Exception ex)
+            {
+                await _log.WriteErrorAsync(nameof(RateCalculatorClient), nameof(GetMarketProfileAsync), string.Empty, ex);
+            }
+
+            return null;
+        }
     }
 }

@@ -141,5 +141,13 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient
         /// </param>
         Task<HttpOperationResponse<IList<ConversionResult>>> ApiRateCalculatorGetMarketAmountInBaseByAssetIdToByOrderActionPostWithHttpMessagesAsync(string assetIdTo, OrderAction orderAction, IList<AssetWithAmount> assetsFrom = default(IList<AssetWithAmount>), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        Task<HttpOperationResponse<MarketProfile>> ApiRateCalculatorGetMarketProfileGetWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+
     }
 }

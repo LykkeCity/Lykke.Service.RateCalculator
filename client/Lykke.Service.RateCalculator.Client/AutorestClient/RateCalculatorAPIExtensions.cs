@@ -278,5 +278,27 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient
                 }
             }
 
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            public static MarketProfile ApiRateCalculatorGetMarketProfileGet(this IRateCalculatorAPI operations)
+            {
+                return operations.ApiRateCalculatorGetMarketProfileGetAsync().GetAwaiter().GetResult();
+            }
+
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='cancellationToken'>
+            /// The cancellation token.
+            /// </param>
+            public static async Task<MarketProfile> ApiRateCalculatorGetMarketProfileGetAsync(this IRateCalculatorAPI operations, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                using (var _result = await operations.ApiRateCalculatorGetMarketProfileGetWithHttpMessagesAsync(null, cancellationToken).ConfigureAwait(false))
+                {
+                    return _result.Body;
+                }
+            }
+
     }
 }

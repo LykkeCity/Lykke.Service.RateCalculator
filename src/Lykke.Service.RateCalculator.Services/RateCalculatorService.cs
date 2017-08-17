@@ -142,6 +142,11 @@ namespace Lykke.Service.RateCalculator.Services
             return assetsFrom.Select(item => GetMarketAmountInBase(orderAction, orderBooks, item, assetIdTo, assetsDict, assetPairs, marketProfile));
         }
 
+        public async Task<MarketProfile> GetMarketProfile()
+        {
+            return await _bestPriceRepository.GetAsync();
+        }
+
         private ConversionResult GetMarketAmountInBase(OrderAction orderAction, IEnumerable<IOrderBook> orderBooks, AssetWithAmount from,
             string assetTo, IDictionary<string, IAsset> assetsDict, IEnumerable<IAssetPair> assetPairs, MarketProfile marketProfile)
         {
