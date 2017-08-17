@@ -54,8 +54,8 @@ namespace Lykke.Service.RateCalculator
                 : HttpSettingsLoader.Load<AppSettings>(Configuration.GetValue<string>("SettingsUrl"));
             var log = CreateLogWithSlack(services, appSettings);
 
-            builder.RegisterModule(new ServiceModule(appSettings.RateCalculatorService, log));
             builder.Populate(services);
+            builder.RegisterModule(new ServiceModule(appSettings.RateCalculatorService, log));
             ApplicationContainer = builder.Build();
 
             return new AutofacServiceProvider(ApplicationContainer);
