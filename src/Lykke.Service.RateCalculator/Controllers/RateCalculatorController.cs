@@ -74,5 +74,12 @@ namespace Lykke.Service.RateCalculator.Controllers
         {
             return await _rateCalculatorService.GetMarketProfile();
         }
+
+        [HttpGet]
+        [Route("GetBestPrice/{assetPair}/{isBuy}")]
+        public async Task<double> GetBestPrice(string assetPair, bool isBuy)
+        {
+            return await _rateCalculatorService.GetBestPrice(assetPair, isBuy);
+        }
     }
 }

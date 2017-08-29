@@ -16,7 +16,7 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient
     /// <summary>
     /// Extension methods for RateCalculatorAPI.
     /// </summary>
-    public static partial class RateCalculatorAPIExtensions
+    internal static partial class RateCalculatorAPIExtensions
     {
             /// <summary>
             /// Checks service is alive
@@ -295,6 +295,36 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient
             public static async Task<MarketProfile> ApiRateCalculatorGetMarketProfileGetAsync(this IRateCalculatorAPI operations, CancellationToken cancellationToken = default(CancellationToken))
             {
                 using (var _result = await operations.ApiRateCalculatorGetMarketProfileGetWithHttpMessagesAsync(null, cancellationToken).ConfigureAwait(false))
+                {
+                    return _result.Body;
+                }
+            }
+
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='assetPair'>
+            /// </param>
+            /// <param name='isBuy'>
+            /// </param>
+            public static double? ApiRateCalculatorGetBestPriceByAssetPairByIsBuyGet(this IRateCalculatorAPI operations, string assetPair, bool isBuy)
+            {
+                return operations.ApiRateCalculatorGetBestPriceByAssetPairByIsBuyGetAsync(assetPair, isBuy).GetAwaiter().GetResult();
+            }
+
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='assetPair'>
+            /// </param>
+            /// <param name='isBuy'>
+            /// </param>
+            /// <param name='cancellationToken'>
+            /// The cancellation token.
+            /// </param>
+            public static async Task<double?> ApiRateCalculatorGetBestPriceByAssetPairByIsBuyGetAsync(this IRateCalculatorAPI operations, string assetPair, bool isBuy, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                using (var _result = await operations.ApiRateCalculatorGetBestPriceByAssetPairByIsBuyGetWithHttpMessagesAsync(assetPair, isBuy, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }

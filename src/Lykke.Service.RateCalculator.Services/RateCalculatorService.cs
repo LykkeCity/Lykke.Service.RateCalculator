@@ -147,6 +147,33 @@ namespace Lykke.Service.RateCalculator.Services
             return await _bestPriceRepository.GetAsync();
         }
 
+        public async Task<double> GetBestPrice(string assetPair, bool buy)
+        {
+            var orderBooks = (await _orderBooksService.GetAllAsync()).ToArray();
+
+            var price = GetBestPrice(orderBooks, assetPair, buy);
+
+            if (price > 0)
+                return price;
+
+            return GetBestPrice(orderBooks, assetPair, !buy);
+        }
+
+        private double GetBestPrice(IOrderBook[] orderBooks, string assetPair, bool buy)
+        {
+            var orderBook = orderBooks.FirstOrDefault(x => x.AssetPair == assetPair && x.IsBuy == buy);
+
+            if (orderBook == null)
+                return 0;
+
+            orderBook.Order();
+
+            if (orderBook.Prices.Count > 0)
+                return orderBook.Prices[0].Price;
+
+            return 0;
+        }
+
         private ConversionResult GetMarketAmountInBase(OrderAction orderAction, IEnumerable<IOrderBook> orderBooks, AssetWithAmount from,
             string assetTo, IDictionary<string, IAsset> assetsDict, IEnumerable<IAssetPair> assetPairs, MarketProfile marketProfile)
         {

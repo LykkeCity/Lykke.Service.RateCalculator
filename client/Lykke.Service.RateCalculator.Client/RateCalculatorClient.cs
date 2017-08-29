@@ -139,5 +139,19 @@ namespace Lykke.Service.RateCalculator.Client
 
             return null;
         }
+
+        public async Task<double> GetBestPriceAsync(string assetPair, bool buy)
+        {
+            try
+            {
+                return await _service.ApiRateCalculatorGetBestPriceByAssetPairByIsBuyGetAsync(assetPair, buy) ?? 0;
+            }
+            catch (Exception ex)
+            {
+                await _log.WriteErrorAsync(nameof(RateCalculatorClient), nameof(GetBestPriceAsync), $"assetPair = {assetPair}, isBuy = {buy}", ex);
+            }
+
+            return 0;
+        }
     }
 }
