@@ -17,7 +17,7 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient
 
     /// <summary>
     /// </summary>
-    public partial interface IRateCalculatorAPI : System.IDisposable
+    internal partial interface IRateCalculatorAPI : System.IDisposable
     {
         /// <summary>
         /// The base URI of the service.
@@ -140,6 +140,26 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient
         /// The cancellation token.
         /// </param>
         Task<HttpOperationResponse<IList<ConversionResult>>> ApiRateCalculatorGetMarketAmountInBaseByAssetIdToByOrderActionPostWithHttpMessagesAsync(string assetIdTo, OrderAction orderAction, IList<AssetWithAmount> assetsFrom = default(IList<AssetWithAmount>), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        Task<HttpOperationResponse<MarketProfile>> ApiRateCalculatorGetMarketProfileGetWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <param name='assetPair'>
+        /// </param>
+        /// <param name='isBuy'>
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        Task<HttpOperationResponse<double?>> ApiRateCalculatorGetBestPriceByAssetPairByIsBuyGetWithHttpMessagesAsync(string assetPair, bool isBuy, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
     }
 }

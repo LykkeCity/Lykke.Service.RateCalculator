@@ -14,5 +14,7 @@ namespace Lykke.Service.RateCalculator.Core.Services
         Task<double> GetAmountInBaseWithProfile(string assetFrom, double amount, string assetTo, MarketProfile marketProfile);
         Task<double> GetAmountInBase(string assetFrom, double amount, string assetTo);
         Task<IEnumerable<ConversionResult>> GetMarketAmountInBase(IEnumerable<AssetWithAmount> assetsFrom, string assetIdTo, OrderAction orderAction);
+        Task<MarketProfile> GetMarketProfile();
+        Task<double> GetBestPrice(string assetPair, bool buy);
     }
 }

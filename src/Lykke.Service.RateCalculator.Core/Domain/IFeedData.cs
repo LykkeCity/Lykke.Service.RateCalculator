@@ -17,14 +17,14 @@ namespace Lykke.Service.RateCalculator.Core.Domain
         public double Bid { get; set; }
         public double Ask { get; set; }
 
-        public static FeedData Create(string asset, double bid, double ask, DateTime? dt = null)
+        public static FeedData Create(IFeedData src)
         {
             return new FeedData
             {
-                Asset = asset,
-                Ask = ask,
-                Bid = bid,
-                DateTime = dt ?? DateTime.UtcNow
+                Asset = src.Asset,
+                Ask = src.Ask,
+                Bid = src.Bid,
+                DateTime = src.DateTime
             };
         }
     }

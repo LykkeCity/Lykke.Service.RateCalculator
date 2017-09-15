@@ -24,7 +24,7 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient.Models
         /// <summary>
         /// Initializes a new instance of the BalanceRecordWithBase class.
         /// </summary>
-        public BalanceRecordWithBase(string assetId = default(string), double? balance = default(double?), string baseAssetId = default(string), double? amountInBase = default(double?))
+        public BalanceRecordWithBase(double balance, string assetId = default(string), string baseAssetId = default(string), double? amountInBase = default(double?))
         {
             AssetId = assetId;
             Balance = balance;
@@ -46,7 +46,7 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient.Models
         /// <summary>
         /// </summary>
         [JsonProperty(PropertyName = "Balance")]
-        public double? Balance { get; set; }
+        public double Balance { get; set; }
 
         /// <summary>
         /// </summary>
@@ -58,5 +58,15 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient.Models
         [JsonProperty(PropertyName = "AmountInBase")]
         public double? AmountInBase { get; set; }
 
+        /// <summary>
+        /// Validate the object.
+        /// </summary>
+        /// <exception cref="Microsoft.Rest.ValidationException">
+        /// Thrown if validation fails
+        /// </exception>
+        public virtual void Validate()
+        {
+            //Nothing to validate
+        }
     }
 }

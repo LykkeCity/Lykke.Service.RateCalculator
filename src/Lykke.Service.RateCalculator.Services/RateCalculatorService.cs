@@ -130,17 +130,48 @@ namespace Lykke.Service.RateCalculator.Services
 
         public async Task<IEnumerable<ConversionResult>> GetMarketAmountInBase(IEnumerable<AssetWithAmount> assetsFrom, string assetIdTo, OrderAction orderAction)
         {
-            var orderBooksTask = _orderBooksService.GetAllAsync();
-            var assetsDictTask = _assetsDict.GetDictionaryAsync();
-            var assetPairsTask = _assetPairsDict.Values();
-            var marketProfileTask = _bestPriceRepository.GetAsync();
+            var orderBooks = (await _orderBooksService.GetAllAsync()).ToArray();
 
-            var orderBooks = await orderBooksTask;
-            var assetsDict = await assetsDictTask;
-            var assetPairs = await assetPairsTask;
-            var marketProfile = await marketProfileTask;
+            if (!orderBooks.Any())
+                return Array.Empty<ConversionResult>();
+
+            var assetsDict = await _assetsDict.GetDictionaryAsync();
+            var assetPairs = await _assetPairsDict.Values();
+            var marketProfile = await _bestPriceRepository.GetAsync();
 
             return assetsFrom.Select(item => GetMarketAmountInBase(orderAction, orderBooks, item, assetIdTo, assetsDict, assetPairs, marketProfile));
+        }
+
+        public async Task<MarketProfile> GetMarketProfile()
+        {
+            return await _bestPriceRepository.GetAsync();
+        }
+
+        public async Task<double> GetBestPrice(string assetPair, bool buy)
+        {
+            var orderBooks = (await _orderBooksService.GetAllAsync()).ToArray();
+
+            var price = GetBestPrice(orderBooks, assetPair, buy);
+
+            if (price > 0)
+                return price;
+
+            return GetBestPrice(orderBooks, assetPair, !buy);
+        }
+
+        private double GetBestPrice(IOrderBook[] orderBooks, string assetPair, bool buy)
+        {
+            var orderBook = orderBooks.FirstOrDefault(x => x.AssetPair == assetPair && x.IsBuy == buy);
+
+            if (orderBook == null)
+                return 0;
+
+            orderBook.Order();
+
+            if (orderBook.Prices.Count > 0)
+                return orderBook.Prices[0].Price;
+
+            return 0;
         }
 
         private ConversionResult GetMarketAmountInBase(OrderAction orderAction, IEnumerable<IOrderBook> orderBooks, AssetWithAmount from,
@@ -151,7 +182,7 @@ namespace Lykke.Service.RateCalculator.Services
 
             if (!IsInputValid(from, assetTo, assetsDict) || assetPair == null)
             {
-                result.SetResult(OperationResult.InvalidInputParameters);
+                result.Result = OperationResult.InvalidInputParameters;
                 return result;
             }
 
@@ -159,7 +190,7 @@ namespace Lykke.Service.RateCalculator.Services
             {
                 result.From = result.To = from;
                 result.Price = result.VolumePrice = 1;
-                result.SetResult(OperationResult.Ok);
+                result.Result = OperationResult.Ok;
                 return result;
             }
 
@@ -169,7 +200,7 @@ namespace Lykke.Service.RateCalculator.Services
 
             if (orderBook == null)
             {
-                result.SetResult(OperationResult.NoLiquidity);
+                result.Result = OperationResult.NoLiquidity;
                 return result;
             }
 
@@ -198,7 +229,7 @@ namespace Lykke.Service.RateCalculator.Services
 
             if (n == 0)
             {
-                result.SetResult(OperationResult.NoLiquidity);
+                result.Result = OperationResult.NoLiquidity;
                 return result;
             }
 
@@ -212,7 +243,7 @@ namespace Lykke.Service.RateCalculator.Services
                 AssetId = assetTo,
                 Amount = (rate * from.Amount).TruncateDecimalPlaces(assetsDict[assetTo].Accuracy, orderAction == OrderAction.Buy)
             };
-            result.SetResult(sum < neededSum ? OperationResult.NoLiquidity : OperationResult.Ok);
+            result.Result = sum < neededSum ? OperationResult.NoLiquidity : OperationResult.Ok;
             result.Price = GetRate(from.AssetId, assetPair, marketProfile.GetPrice(assetPair.Id, orderAction).GetValueOrDefault());
             result.VolumePrice = displayRate;
 

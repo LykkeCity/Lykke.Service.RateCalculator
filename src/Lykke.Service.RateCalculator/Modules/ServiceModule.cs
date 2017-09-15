@@ -6,6 +6,7 @@ using Lykke.Service.RateCalculator.AzureRepositories;
 using Lykke.Service.RateCalculator.Core;
 using Lykke.Service.RateCalculator.Core.Domain;
 using Lykke.Service.RateCalculator.Core.Services;
+using Lykke.Service.RateCalculator.Extensions;
 using Lykke.Service.RateCalculator.Services;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Redis;
@@ -57,11 +58,15 @@ namespace Lykke.Service.RateCalculator.Modules
                     async () => (await ctx.Resolve<IAssetPairsRepository>().GetAllAsync()).ToDictionary(itm => itm.Id));
             }).SingleInstance();
 
-            var redis = new RedisCache(new RedisCacheOptions
+            var cacheOptions = new RedisCacheOptions
             {
                 Configuration = _settings.CacheSettings.RedisConfiguration,
                 InstanceName = _settings.CacheSettings.FinanceDataCacheInstance
-            });
+            };
+
+            cacheOptions.ResolveDns(_settings.CacheSettings.RedisInternalHost);
+
+            var redis = new RedisCache(cacheOptions);
 
             builder.RegisterInstance(redis)
                 .As<IDistributedCache>()

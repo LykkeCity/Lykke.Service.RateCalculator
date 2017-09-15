@@ -26,7 +26,7 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient.Models
         /// <summary>
         /// Initializes a new instance of the MarketProfile class.
         /// </summary>
-        public MarketProfile(IList<IFeedData> profile = default(IList<IFeedData>))
+        public MarketProfile(IList<FeedData> profile = default(IList<FeedData>))
         {
             Profile = profile;
             CustomInit();
@@ -40,7 +40,7 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient.Models
         /// <summary>
         /// </summary>
         [JsonProperty(PropertyName = "Profile")]
-        public IList<IFeedData> Profile { get; set; }
+        public IList<FeedData> Profile { get; set; }
 
     }
 }

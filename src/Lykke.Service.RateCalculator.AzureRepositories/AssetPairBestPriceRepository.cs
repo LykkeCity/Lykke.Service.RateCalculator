@@ -58,7 +58,7 @@ namespace Lykke.Service.RateCalculator.AzureRepositories
 
             return new MarketProfile
             {
-                Profile = result.Where(itm => itm.PartitionKey == profilePartitionKey).ToArray()
+                Profile = result.Where(itm => itm.PartitionKey == profilePartitionKey).Select(FeedData.Create).ToArray()
             };
         }
 

@@ -23,6 +23,8 @@
     {
         public string FinanceDataCacheInstance { get; set; }
         public string RedisConfiguration { get; set; }
+        public int RedisPort { get; set; }
+        public string RedisInternalHost { get; set; }
 
         public string OrderBooksCacheKeyPattern { get; set; }
         public string AssetsForClientCacheKeyPattern { get; set; }

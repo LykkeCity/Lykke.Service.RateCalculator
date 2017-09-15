@@ -24,7 +24,7 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient.Models
         /// <summary>
         /// Initializes a new instance of the AssetPair class.
         /// </summary>
-        public AssetPair(string id = default(string), string name = default(string), string baseAssetId = default(string), string quotingAssetId = default(string), int? accuracy = default(int?), int? invertedAccuracy = default(int?), string source = default(string), string source2 = default(string), bool? isDisabled = default(bool?))
+        public AssetPair(int accuracy, int invertedAccuracy, bool isDisabled, string id = default(string), string name = default(string), string baseAssetId = default(string), string quotingAssetId = default(string), string source = default(string), string source2 = default(string))
         {
             Id = id;
             Name = name;
@@ -66,12 +66,12 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient.Models
         /// <summary>
         /// </summary>
         [JsonProperty(PropertyName = "Accuracy")]
-        public int? Accuracy { get; set; }
+        public int Accuracy { get; set; }
 
         /// <summary>
         /// </summary>
         [JsonProperty(PropertyName = "InvertedAccuracy")]
-        public int? InvertedAccuracy { get; set; }
+        public int InvertedAccuracy { get; set; }
 
         /// <summary>
         /// </summary>
@@ -86,7 +86,17 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient.Models
         /// <summary>
         /// </summary>
         [JsonProperty(PropertyName = "IsDisabled")]
-        public bool? IsDisabled { get; set; }
+        public bool IsDisabled { get; set; }
 
+        /// <summary>
+        /// Validate the object.
+        /// </summary>
+        /// <exception cref="Microsoft.Rest.ValidationException">
+        /// Thrown if validation fails
+        /// </exception>
+        public virtual void Validate()
+        {
+            //Nothing to validate
+        }
     }
 }
