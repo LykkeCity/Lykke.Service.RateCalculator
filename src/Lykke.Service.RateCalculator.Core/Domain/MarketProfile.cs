@@ -5,7 +5,7 @@ namespace Lykke.Service.RateCalculator.Core.Domain
 {
     public class MarketProfile
     {
-        public IEnumerable<IFeedData> Profile { get; set; }
+        public IEnumerable<FeedData> Profile { get; set; }
     }
 
     public static class MarketProfileExt

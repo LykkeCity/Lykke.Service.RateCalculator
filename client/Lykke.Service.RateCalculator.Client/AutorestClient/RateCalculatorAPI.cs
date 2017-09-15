@@ -295,6 +295,10 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient
             {
                 throw new ValidationException(ValidationRules.CannotBeNull, "assetId");
             }
+            if (assetPair != null)
+            {
+                assetPair.Validate();
+            }
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
             string _invocationId = null;
@@ -339,7 +343,7 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient
             {
                 _requestContent = SafeJsonConvert.SerializeObject(assetPair, SerializationSettings);
                 _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
-                _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+                _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json-patch+json; charset=utf-8");
             }
             // Send Request
             if (_shouldTrace)
@@ -634,7 +638,7 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient
             {
                 _requestContent = SafeJsonConvert.SerializeObject(marketProfile, SerializationSettings);
                 _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
-                _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+                _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json-patch+json; charset=utf-8");
             }
             // Send Request
             if (_shouldTrace)
@@ -732,6 +736,16 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient
             {
                 throw new ValidationException(ValidationRules.CannotBeNull, "toAssetId");
             }
+            if (balanceRecords != null)
+            {
+                foreach (var element in balanceRecords)
+                {
+                    if (element != null)
+                    {
+                        element.Validate();
+                    }
+                }
+            }
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
             string _invocationId = null;
@@ -774,7 +788,7 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient
             {
                 _requestContent = SafeJsonConvert.SerializeObject(balanceRecords, SerializationSettings);
                 _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
-                _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+                _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json-patch+json; charset=utf-8");
             }
             // Send Request
             if (_shouldTrace)
@@ -872,6 +886,10 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient
             {
                 throw new ValidationException(ValidationRules.CannotBeNull, "baseAssetId");
             }
+            if (balanceRecord != null)
+            {
+                balanceRecord.Validate();
+            }
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
             string _invocationId = null;
@@ -914,7 +932,7 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient
             {
                 _requestContent = SafeJsonConvert.SerializeObject(balanceRecord, SerializationSettings);
                 _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
-                _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+                _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json-patch+json; charset=utf-8");
             }
             // Send Request
             if (_shouldTrace)
@@ -1012,6 +1030,16 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient
             {
                 throw new ValidationException(ValidationRules.CannotBeNull, "baseAssetId");
             }
+            if (balanceRecords != null)
+            {
+                foreach (var element in balanceRecords)
+                {
+                    if (element != null)
+                    {
+                        element.Validate();
+                    }
+                }
+            }
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
             string _invocationId = null;
@@ -1054,7 +1082,7 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient
             {
                 _requestContent = SafeJsonConvert.SerializeObject(balanceRecords, SerializationSettings);
                 _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
-                _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+                _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json-patch+json; charset=utf-8");
             }
             // Send Request
             if (_shouldTrace)
@@ -1155,6 +1183,16 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient
             {
                 throw new ValidationException(ValidationRules.CannotBeNull, "assetIdTo");
             }
+            if (assetsFrom != null)
+            {
+                foreach (var element in assetsFrom)
+                {
+                    if (element != null)
+                    {
+                        element.Validate();
+                    }
+                }
+            }
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
             string _invocationId = null;
@@ -1199,7 +1237,7 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient
             {
                 _requestContent = SafeJsonConvert.SerializeObject(assetsFrom, SerializationSettings);
                 _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
-                _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+                _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json-patch+json; charset=utf-8");
             }
             // Send Request
             if (_shouldTrace)

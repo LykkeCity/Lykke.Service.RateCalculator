@@ -96,7 +96,7 @@ namespace Lykke.Service.RateCalculator.Tests
         public async Task Is_GetAmountInBase_Correct()
         {
             var marketProfile = new MarketProfile();
-            var feedData = new List<IFeedData>
+            var feedData = new List<FeedData>
             {
                 new FeedData {Asset = "BTCUSD", Ask = 2656.381, Bid = 2652, DateTime = DateTime.UtcNow}
             };
@@ -111,7 +111,7 @@ namespace Lykke.Service.RateCalculator.Tests
         public async Task Is_GetAmountInBase_Inverted_Correct()
         {
             var marketProfile = new MarketProfile();
-            var feedData = new List<IFeedData>
+            var feedData = new List<FeedData>
             {
                 new FeedData {Asset = "USDCHF", Ask = 0.98599, Bid = 0.97925, DateTime = DateTime.UtcNow}
             };

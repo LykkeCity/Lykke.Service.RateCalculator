@@ -24,7 +24,9 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient.Models
         /// <summary>
         /// Initializes a new instance of the ConversionResult class.
         /// </summary>
-        public ConversionResult(AssetWithAmount fromProperty = default(AssetWithAmount), AssetWithAmount to = default(AssetWithAmount), double? price = default(double?), double? volumePrice = default(double?), string result = default(string))
+        /// <param name="result">Possible values include: 'Unknown', 'Ok',
+        /// 'InvalidInputParameters', 'NoLiquidity'</param>
+        public ConversionResult(double price, double volumePrice, OperationResult result, AssetWithAmount fromProperty = default(AssetWithAmount), AssetWithAmount to = default(AssetWithAmount))
         {
             FromProperty = fromProperty;
             To = to;
@@ -52,17 +54,36 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient.Models
         /// <summary>
         /// </summary>
         [JsonProperty(PropertyName = "Price")]
-        public double? Price { get; set; }
+        public double Price { get; set; }
 
         /// <summary>
         /// </summary>
         [JsonProperty(PropertyName = "VolumePrice")]
-        public double? VolumePrice { get; set; }
+        public double VolumePrice { get; set; }
 
         /// <summary>
+        /// Gets or sets possible values include: 'Unknown', 'Ok',
+        /// 'InvalidInputParameters', 'NoLiquidity'
         /// </summary>
         [JsonProperty(PropertyName = "Result")]
-        public string Result { get; private set; }
+        public OperationResult Result { get; set; }
 
+        /// <summary>
+        /// Validate the object.
+        /// </summary>
+        /// <exception cref="Microsoft.Rest.ValidationException">
+        /// Thrown if validation fails
+        /// </exception>
+        public virtual void Validate()
+        {
+            if (FromProperty != null)
+            {
+                FromProperty.Validate();
+            }
+            if (To != null)
+            {
+                To.Validate();
+            }
+        }
     }
 }

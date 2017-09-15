@@ -11,13 +11,6 @@
         /// </summary>
         public double VolumePrice { get; set; }
 
-        public string Result => _result.ToString();
-
-        private OperationResult _result;
-
-        public void SetResult(OperationResult result)
-        {
-            _result = result;
-        }
+        public OperationResult Result { get; set; }
     }
 }

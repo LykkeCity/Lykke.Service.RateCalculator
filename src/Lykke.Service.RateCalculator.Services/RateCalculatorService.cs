@@ -182,7 +182,7 @@ namespace Lykke.Service.RateCalculator.Services
 
             if (!IsInputValid(from, assetTo, assetsDict) || assetPair == null)
             {
-                result.SetResult(OperationResult.InvalidInputParameters);
+                result.Result = OperationResult.InvalidInputParameters;
                 return result;
             }
 
@@ -190,7 +190,7 @@ namespace Lykke.Service.RateCalculator.Services
             {
                 result.From = result.To = from;
                 result.Price = result.VolumePrice = 1;
-                result.SetResult(OperationResult.Ok);
+                result.Result = OperationResult.Ok;
                 return result;
             }
 
@@ -200,7 +200,7 @@ namespace Lykke.Service.RateCalculator.Services
 
             if (orderBook == null)
             {
-                result.SetResult(OperationResult.NoLiquidity);
+                result.Result = OperationResult.NoLiquidity;
                 return result;
             }
 
@@ -229,7 +229,7 @@ namespace Lykke.Service.RateCalculator.Services
 
             if (n == 0)
             {
-                result.SetResult(OperationResult.NoLiquidity);
+                result.Result = OperationResult.NoLiquidity;
                 return result;
             }
 
@@ -243,7 +243,7 @@ namespace Lykke.Service.RateCalculator.Services
                 AssetId = assetTo,
                 Amount = (rate * from.Amount).TruncateDecimalPlaces(assetsDict[assetTo].Accuracy, orderAction == OrderAction.Buy)
             };
-            result.SetResult(sum < neededSum ? OperationResult.NoLiquidity : OperationResult.Ok);
+            result.Result = sum < neededSum ? OperationResult.NoLiquidity : OperationResult.Ok;
             result.Price = GetRate(from.AssetId, assetPair, marketProfile.GetPrice(assetPair.Id, orderAction).GetValueOrDefault());
             result.VolumePrice = displayRate;
 

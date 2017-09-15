@@ -11,20 +11,20 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient.Models
     using Newtonsoft.Json;
     using System.Linq;
 
-    public partial class IFeedData
+    public partial class FeedData
     {
         /// <summary>
-        /// Initializes a new instance of the IFeedData class.
+        /// Initializes a new instance of the FeedData class.
         /// </summary>
-        public IFeedData()
+        public FeedData()
         {
           CustomInit();
         }
 
         /// <summary>
-        /// Initializes a new instance of the IFeedData class.
+        /// Initializes a new instance of the FeedData class.
         /// </summary>
-        public IFeedData(string asset = default(string), System.DateTime? dateTime = default(System.DateTime?), double? bid = default(double?), double? ask = default(double?))
+        public FeedData(System.DateTime dateTime, double bid, double ask, string asset = default(string))
         {
             Asset = asset;
             DateTime = dateTime;
@@ -41,22 +41,32 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient.Models
         /// <summary>
         /// </summary>
         [JsonProperty(PropertyName = "Asset")]
-        public string Asset { get; private set; }
+        public string Asset { get; set; }
 
         /// <summary>
         /// </summary>
         [JsonProperty(PropertyName = "DateTime")]
-        public System.DateTime? DateTime { get; private set; }
+        public System.DateTime DateTime { get; set; }
 
         /// <summary>
         /// </summary>
         [JsonProperty(PropertyName = "Bid")]
-        public double? Bid { get; private set; }
+        public double Bid { get; set; }
 
         /// <summary>
         /// </summary>
         [JsonProperty(PropertyName = "Ask")]
-        public double? Ask { get; private set; }
+        public double Ask { get; set; }
 
+        /// <summary>
+        /// Validate the object.
+        /// </summary>
+        /// <exception cref="Microsoft.Rest.ValidationException">
+        /// Thrown if validation fails
+        /// </exception>
+        public virtual void Validate()
+        {
+            //Nothing to validate
+        }
     }
 }

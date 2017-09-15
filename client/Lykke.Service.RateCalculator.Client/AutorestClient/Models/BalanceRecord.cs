@@ -24,7 +24,7 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient.Models
         /// <summary>
         /// Initializes a new instance of the BalanceRecord class.
         /// </summary>
-        public BalanceRecord(string assetId = default(string), double? balance = default(double?))
+        public BalanceRecord(double balance, string assetId = default(string))
         {
             AssetId = assetId;
             Balance = balance;
@@ -44,7 +44,17 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient.Models
         /// <summary>
         /// </summary>
         [JsonProperty(PropertyName = "Balance")]
-        public double? Balance { get; set; }
+        public double Balance { get; set; }
 
+        /// <summary>
+        /// Validate the object.
+        /// </summary>
+        /// <exception cref="Microsoft.Rest.ValidationException">
+        /// Thrown if validation fails
+        /// </exception>
+        public virtual void Validate()
+        {
+            //Nothing to validate
+        }
     }
 }
