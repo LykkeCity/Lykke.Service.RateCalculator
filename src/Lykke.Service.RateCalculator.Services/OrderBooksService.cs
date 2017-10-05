@@ -24,13 +24,13 @@ namespace Lykke.Service.RateCalculator.Services
             _settings = settings;
         }
 
-        public async Task<IEnumerable<IOrderBook>> GetAllAsync()
+        public async Task<IEnumerable<IOrderBook>> GetAllAsync(IEnumerable<IAssetPair> assetPairs = null)
         {
-            var assetPairs = await _assetPairsDict.Values();
+            var assetPairsToProcess = assetPairs ?? await _assetPairsDict.Values();
 
             var orderBooks = new List<IOrderBook>();
 
-            foreach (var pair in assetPairs)
+            foreach (var pair in assetPairsToProcess)
             {
                 var buyBookJson = _distributedCache.GetStringAsync(_settings.CacheSettings.GetOrderBookKey(pair.Id, true));
                 var sellBookJson = _distributedCache.GetStringAsync(_settings.CacheSettings.GetOrderBookKey(pair.Id, false));
@@ -47,6 +47,11 @@ namespace Lykke.Service.RateCalculator.Services
             }
 
             return orderBooks;
+        }
+
+        public async Task<IEnumerable<IOrderBook>> GetAsync(IAssetPair assetPair)
+        {
+            return await GetAllAsync(new List<IAssetPair> {assetPair});
         }
     }
 }

@@ -130,16 +130,21 @@ namespace Lykke.Service.RateCalculator.Services
 
         public async Task<IEnumerable<ConversionResult>> GetMarketAmountInBase(IEnumerable<AssetWithAmount> assetsFrom, string assetIdTo, OrderAction orderAction)
         {
-            var orderBooks = (await _orderBooksService.GetAllAsync()).ToArray();
+            var assetPairsDict = await _assetPairsDict.Values();
+            var assetsDict = await _assetsDict.GetDictionaryAsync();
+            var marketProfile = await _bestPriceRepository.GetAsync();
+
+            var assetWithAmounts = assetsFrom as AssetWithAmount[] ?? assetsFrom.ToArray();
+            var assetPairsToProcess = assetWithAmounts
+                .Select(assetFrom => assetPairsDict.PairWithAssets(assetFrom.AssetId, assetIdTo));
+
+            var orderBooks = (await _orderBooksService.GetAllAsync(assetPairsToProcess)).ToArray();
 
             if (!orderBooks.Any())
                 return Array.Empty<ConversionResult>();
 
-            var assetsDict = await _assetsDict.GetDictionaryAsync();
-            var assetPairs = await _assetPairsDict.Values();
-            var marketProfile = await _bestPriceRepository.GetAsync();
-
-            return assetsFrom.Select(item => GetMarketAmountInBase(orderAction, orderBooks, item, assetIdTo, assetsDict, assetPairs, marketProfile));
+            return assetWithAmounts.Select(item => GetMarketAmountInBase(orderAction, orderBooks, item, assetIdTo,
+                assetsDict, assetPairsDict, marketProfile));
         }
 
         public async Task<MarketProfile> GetMarketProfile()
@@ -147,21 +152,25 @@ namespace Lykke.Service.RateCalculator.Services
             return await _bestPriceRepository.GetAsync();
         }
 
-        public async Task<double> GetBestPrice(string assetPair, bool buy)
+        public async Task<double> GetBestPrice(string assetPairId, bool buy)
         {
-            var orderBooks = (await _orderBooksService.GetAllAsync()).ToArray();
+            var assetPair = (await _assetPairsDict.Values()).SingleOrDefault(a => a.Id == assetPairId);
+            if (assetPair == null)
+                return 0;
 
-            var price = GetBestPrice(orderBooks, assetPair, buy);
+            var orderBooks = (await _orderBooksService.GetAsync(assetPair)).ToArray();
+
+            var price = GetBestPrice(orderBooks, assetPairId, buy);
 
             if (price > 0)
                 return price;
 
-            return GetBestPrice(orderBooks, assetPair, !buy);
+            return GetBestPrice(orderBooks, assetPairId, !buy);
         }
 
-        private double GetBestPrice(IOrderBook[] orderBooks, string assetPair, bool buy)
+        private double GetBestPrice(IOrderBook[] orderBooks, string assetPairId, bool buy)
         {
-            var orderBook = orderBooks.FirstOrDefault(x => x.AssetPair == assetPair && x.IsBuy == buy);
+            var orderBook = orderBooks.FirstOrDefault(x => x.AssetPair == assetPairId && x.IsBuy == buy);
 
             if (orderBook == null)
                 return 0;
