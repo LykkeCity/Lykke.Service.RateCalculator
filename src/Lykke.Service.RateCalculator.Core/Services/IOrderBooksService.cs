@@ -6,6 +6,7 @@ namespace Lykke.Service.RateCalculator.Core.Services
 {
     public interface IOrderBooksService
     {
-        Task<IEnumerable<IOrderBook>> GetAllAsync();
+        Task<IEnumerable<IOrderBook>> GetAllAsync(IEnumerable<IAssetPair> assetPairs = null);
+        Task<IEnumerable<IOrderBook>> GetAsync(IAssetPair assetPair);
     }
 }
