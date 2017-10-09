@@ -136,7 +136,8 @@ namespace Lykke.Service.RateCalculator.Services
 
             var assetWithAmounts = assetsFrom as AssetWithAmount[] ?? assetsFrom.ToArray();
             var assetPairsToProcess = assetWithAmounts
-                .Select(assetFrom => assetPairsDict.PairWithAssets(assetFrom.AssetId, assetIdTo));
+                .Select(assetFrom => assetPairsDict.PairWithAssets(assetFrom.AssetId, assetIdTo))
+                .Where(p => p != null);
 
             var orderBooks = (await _orderBooksService.GetAllAsync(assetPairsToProcess)).ToArray();
 
