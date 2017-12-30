@@ -7,10 +7,6 @@ namespace Lykke.Service.RateCalculator.Tests.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterInstance<IAssetPairBestPriceRepository>(
-                TestsUtils.GetBestPriceRepository()
-            ).SingleInstance();
-
             builder.RegisterInstance<IAssetsRepository>(
                 TestsUtils.GetAssetsRepository()
             ).SingleInstance();

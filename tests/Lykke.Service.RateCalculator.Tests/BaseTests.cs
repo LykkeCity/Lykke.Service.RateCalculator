@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Autofac;
 using Common;
+using Lykke.Service.MarketProfile.Client;
 using Lykke.Service.RateCalculator.Core.Domain;
 using Lykke.Service.RateCalculator.Core.Services;
 using Lykke.Service.RateCalculator.Services;
@@ -43,6 +44,8 @@ namespace Lykke.Service.RateCalculator.Tests
             builder.RegisterType<RateCalculatorService>()
                 .As<IRateCalculatorService>()
                 .SingleInstance();
+
+            builder.RegisterModule(new MarketProfileModule());
 
             Container = builder.Build();
         }
