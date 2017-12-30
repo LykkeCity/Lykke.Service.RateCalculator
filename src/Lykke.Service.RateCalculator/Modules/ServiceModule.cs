@@ -1,13 +1,15 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Autofac;
 using Common;
 using Common.Log;
+using Lykke.Service.MarketProfile.Client;
 using Lykke.Service.RateCalculator.AzureRepositories;
 using Lykke.Service.RateCalculator.Core;
 using Lykke.Service.RateCalculator.Core.Domain;
 using Lykke.Service.RateCalculator.Core.Services;
-using Lykke.Service.RateCalculator.Extensions;
 using Lykke.Service.RateCalculator.Services;
+using Lykke.SettingsReader;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Redis;
 
@@ -15,10 +17,10 @@ namespace Lykke.Service.RateCalculator.Modules
 {
     public class ServiceModule : Module
     {
-        private readonly RateCalculatorSettings _settings;
+        private readonly IReloadingManager<AppSettings> _settings;
         private readonly ILog _log;
 
-        public ServiceModule(RateCalculatorSettings settings, ILog log)
+        public ServiceModule(IReloadingManager<AppSettings> settings, ILog log)
         {
             _settings = settings;
             _log = log;
@@ -26,23 +28,33 @@ namespace Lykke.Service.RateCalculator.Modules
 
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterInstance(_settings)
+            builder.RegisterInstance(_settings.CurrentValue.RateCalculatorService)
                 .SingleInstance();
 
             builder.RegisterInstance(_log)
                 .As<ILog>()
                 .SingleInstance();
 
+            builder.RegisterType<HealthService>()
+                .As<IHealthService>()
+                .SingleInstance();
+
+            builder.RegisterType<StartupManager>()
+                .As<IStartupManager>();
+
+            builder.RegisterType<ShutdownManager>()
+                .As<IShutdownManager>();
+
             builder.RegisterInstance<IAssetsRepository>(
-                AzureRepoFactories.CreateAssetsRepository(_settings.Db.DictsConnString, _log)
+                AzureRepoFactories.CreateAssetsRepository(_settings.ConnectionString(x => x.RateCalculatorService.Db.DictsConnString), _log)
             ).SingleInstance();
 
             builder.RegisterInstance<IAssetPairsRepository>(
-                AzureRepoFactories.CreateAssetPairsRepository(_settings.Db.DictsConnString, _log)
+                AzureRepoFactories.CreateAssetPairsRepository(_settings.ConnectionString(x => x.RateCalculatorService.Db.DictsConnString), _log)
             ).SingleInstance();
 
             builder.RegisterInstance<IAssetPairBestPriceRepository>(
-                AzureRepoFactories.CreateBestPriceRepository(_settings.Db.HLiquidityConnString, _log)
+                AzureRepoFactories.CreateBestPriceRepository(_settings.ConnectionString(x => x.RateCalculatorService.Db.HLiquidityConnString), _log)
             ).SingleInstance();
 
             builder.Register(x =>
@@ -58,17 +70,13 @@ namespace Lykke.Service.RateCalculator.Modules
                     async () => (await ctx.Resolve<IAssetPairsRepository>().GetAllAsync()).ToDictionary(itm => itm.Id));
             }).SingleInstance();
 
-            var cacheOptions = new RedisCacheOptions
+            var financeRedisCache = new RedisCache(new RedisCacheOptions
             {
-                Configuration = _settings.CacheSettings.RedisConfiguration,
-                InstanceName = _settings.CacheSettings.FinanceDataCacheInstance
-            };
+                Configuration = _settings.CurrentValue.RateCalculatorService.CacheSettings.RedisConfiguration,
+                InstanceName = _settings.CurrentValue.RateCalculatorService.CacheSettings.FinanceDataCacheInstance
+            });
 
-            cacheOptions.ResolveDns(_settings.CacheSettings.RedisInternalHost);
-
-            var redis = new RedisCache(cacheOptions);
-
-            builder.RegisterInstance(redis)
+            builder.RegisterInstance(financeRedisCache)
                 .As<IDistributedCache>()
                 .SingleInstance();
 
@@ -79,6 +87,10 @@ namespace Lykke.Service.RateCalculator.Modules
             builder.RegisterType<OrderBookService>()
                 .As<IOrderBooksService>()
                 .SingleInstance();
+
+            builder.RegisterType<LykkeMarketProfile>()
+                .As<ILykkeMarketProfile>()
+                .WithParameter("baseUri", new Uri(_settings.CurrentValue.MarketProfileServiceClient.ServiceUrl));
         }
     }
 }
