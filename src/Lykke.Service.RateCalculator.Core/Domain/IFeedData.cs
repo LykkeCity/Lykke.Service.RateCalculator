@@ -4,6 +4,7 @@ namespace Lykke.Service.RateCalculator.Core.Domain
 {
     public interface IFeedData
     {
+        // It was meant to be AssetPair and it is AssetPair
         string Asset { get; }
         DateTime DateTime { get; }
         double Bid { get; }

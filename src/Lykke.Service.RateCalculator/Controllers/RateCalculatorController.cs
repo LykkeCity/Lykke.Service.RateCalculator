@@ -35,7 +35,7 @@ namespace Lykke.Service.RateCalculator.Controllers
 
         [HttpPost]
         [Route("GetAmountInBaseWithProfile/{assetFrom}/{assetTo}/{amount}")]
-        public async Task<double> GetAmountInBaseWithProfile(string assetFrom, string assetTo, double amount, [FromBody]MarketProfile marketProfile)
+        public async Task<double> GetAmountInBaseWithProfile(string assetFrom, string assetTo, double amount, [FromBody] Core.Domain.MarketProfile marketProfile)
         {
             return await _rateCalculatorService.GetAmountInBaseWithProfile(assetFrom, amount, assetTo, marketProfile);
         }
@@ -70,7 +70,7 @@ namespace Lykke.Service.RateCalculator.Controllers
 
         [HttpGet]
         [Route("GetMarketProfile")]
-        public async Task<MarketProfile> GetMarketProfile()
+        public async Task<Core.Domain.MarketProfile> GetMarketProfile()
         {
             return await _rateCalculatorService.GetMarketProfile();
         }
