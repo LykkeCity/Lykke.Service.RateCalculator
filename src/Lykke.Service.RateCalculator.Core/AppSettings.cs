@@ -4,6 +4,7 @@
     {
         public RateCalculatorSettings RateCalculatorService { get; set; }
         public SlackNotificationsSettings SlackNotifications { get; set; }
+        public MarketProfileServiceClientSettings MarketProfileServiceClient { get; set; }
     }
 
     public class RateCalculatorSettings
@@ -55,5 +56,10 @@
         public string ConnectionString { get; set; }
 
         public string QueueName { get; set; }
+    }
+
+    public class MarketProfileServiceClientSettings
+    {
+        public string ServiceUrl { get; set; }
     }
 }

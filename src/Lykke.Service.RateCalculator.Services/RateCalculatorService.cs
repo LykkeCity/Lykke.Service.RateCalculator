@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Common;
+using Lykke.Service.MarketProfile.Client;
 using Lykke.Service.RateCalculator.Core.Domain;
 using Lykke.Service.RateCalculator.Core.Services;
 
@@ -12,19 +13,19 @@ namespace Lykke.Service.RateCalculator.Services
     {
         private readonly CachedDataDictionary<string, IAsset> _assetsDict;
         private readonly CachedDataDictionary<string, IAssetPair> _assetPairsDict;
-        private readonly IAssetPairBestPriceRepository _bestPriceRepository;
         private readonly IOrderBooksService _orderBooksService;
+        private readonly ILykkeMarketProfile _marketProfileServiceClient;
 
         public RateCalculatorService(
             CachedDataDictionary<string, IAsset> assetsDict,
             CachedDataDictionary<string, IAssetPair> assetPairsDict,
-            IAssetPairBestPriceRepository bestPriceRepository,
-            IOrderBooksService orderBooksService)
+            IOrderBooksService orderBooksService,
+            ILykkeMarketProfile marketProfileServiceClient)
         {
             _assetsDict = assetsDict;
             _assetPairsDict = assetPairsDict;
-            _bestPriceRepository = bestPriceRepository;
             _orderBooksService = orderBooksService;
+            _marketProfileServiceClient = marketProfileServiceClient;
         }
 
         public double GetRate(string neededAssetId, IAssetPair assetPair, double price)
@@ -39,7 +40,7 @@ namespace Lykke.Service.RateCalculator.Services
         public async Task<IEnumerable<BalanceRecordWithBase>> FillBaseAssetData(IEnumerable<IBalanceRecord> balanceRecords, string baseAssetId)
         {
             List<BalanceRecordWithBase> result = new List<BalanceRecordWithBase>();
-            var marketProfile = await _bestPriceRepository.GetAsync();
+            var marketProfile = await GetMarketProfileRemoteAsync();
 
             foreach (var record in balanceRecords)
             {
@@ -66,7 +67,7 @@ namespace Lykke.Service.RateCalculator.Services
         {
             var result = new List<BalanceRecord>();
 
-            var marketProfile = await _bestPriceRepository.GetAsync();
+            var marketProfile = await GetMarketProfileRemoteAsync();
 
             foreach (var record in balanceRecords)
             {
@@ -78,7 +79,7 @@ namespace Lykke.Service.RateCalculator.Services
 
         public async Task<double> GetAmountInBase(string assetFrom, double amount, string assetTo)
         {
-            var marketProfileData = await _bestPriceRepository.GetAsync();
+            var marketProfileData = await GetMarketProfileRemoteAsync();
 
             if (assetFrom == assetTo)
                 return amount;
@@ -102,9 +103,9 @@ namespace Lykke.Service.RateCalculator.Services
             return (price * amount).TruncateDecimalPlaces(toAsset.Accuracy);
         }
 
-        public async Task<double> GetAmountInBaseWithProfile(string assetFrom, double amount, string assetTo, MarketProfile marketProfile)
+        public async Task<double> GetAmountInBaseWithProfile(string assetFrom, double amount, string assetTo, Core.Domain.MarketProfile marketProfile)
         {
-            var marketProfileData = marketProfile ?? await _bestPriceRepository.GetAsync();
+            var marketProfileData = marketProfile ?? await GetMarketProfileRemoteAsync();
 
             if (assetFrom == assetTo)
                 return amount;
@@ -132,7 +133,7 @@ namespace Lykke.Service.RateCalculator.Services
         {
             var assetPairsDict = await _assetPairsDict.Values();
             var assetsDict = await _assetsDict.GetDictionaryAsync();
-            var marketProfile = await _bestPriceRepository.GetAsync();
+            var marketProfile = await GetMarketProfileRemoteAsync();
 
             var assetWithAmounts = assetsFrom as AssetWithAmount[] ?? assetsFrom.ToArray();
             var assetPairsToProcess = assetWithAmounts
@@ -148,9 +149,9 @@ namespace Lykke.Service.RateCalculator.Services
                 assetsDict, assetPairsDict, marketProfile));
         }
 
-        public async Task<MarketProfile> GetMarketProfile()
+        public async Task<Core.Domain.MarketProfile> GetMarketProfile()
         {
-            return await _bestPriceRepository.GetAsync();
+            return await GetMarketProfileRemoteAsync();
         }
 
         public async Task<double> GetBestPrice(string assetPairId, bool buy)
@@ -185,7 +186,7 @@ namespace Lykke.Service.RateCalculator.Services
         }
 
         private ConversionResult GetMarketAmountInBase(OrderAction orderAction, IEnumerable<IOrderBook> orderBooks, AssetWithAmount from,
-            string assetTo, IDictionary<string, IAsset> assetsDict, IEnumerable<IAssetPair> assetPairs, MarketProfile marketProfile)
+            string assetTo, IDictionary<string, IAsset> assetsDict, IEnumerable<IAssetPair> assetPairs, Core.Domain.MarketProfile marketProfile)
         {
             var result = new ConversionResult();
             var assetPair = assetPairs.PairWithAssets(from.AssetId, assetTo);
@@ -266,6 +267,11 @@ namespace Lykke.Service.RateCalculator.Services
                 return false;
 
             return true;
+        }
+
+        private async Task<Core.Domain.MarketProfile> GetMarketProfileRemoteAsync()
+        {
+            return (await _marketProfileServiceClient.ApiMarketProfileGetAsync()).ToApiModel();
         }
     }
 }

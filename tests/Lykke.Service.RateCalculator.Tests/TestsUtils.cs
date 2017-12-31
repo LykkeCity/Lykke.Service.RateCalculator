@@ -76,22 +76,5 @@ namespace Lykke.Service.RateCalculator.Tests
 
             return repository;
         }
-
-        public static AssetPairBestPriceRepository GetBestPriceRepository()
-        {
-            var repository = new AssetPairBestPriceRepository(new NoSqlTableInMemory<FeedDataEntity>());
-            var feed = new List<IFeedData>
-            {
-                new FeedData {Asset = "BTCUSD", Ask = 2656.381, Bid = 2652, DateTime = DateTime.UtcNow},
-                new FeedData {Asset = "USDCHF", Ask = 0.98599, Bid = 0.97925, DateTime = DateTime.UtcNow}
-            };
-
-            foreach (var f in feed)
-            {
-                repository.SaveAsync(f).Wait();
-            }
-
-            return repository;
-        }
     }
 }
