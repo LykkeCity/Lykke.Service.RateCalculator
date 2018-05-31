@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Common;
 using Common.Log;
@@ -16,7 +17,7 @@ namespace Lykke.Service.RateCalculator.Client
 
         public RateCalculatorClient(string serviceUrl, ILog log)
         {
-            _service = new RateCalculatorAPI(new Uri(serviceUrl));
+            _service = new RateCalculatorAPI(new Uri(serviceUrl), new HttpClient());
             _log = log;
         }
 
