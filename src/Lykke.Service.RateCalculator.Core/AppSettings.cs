@@ -1,10 +1,14 @@
-﻿namespace Lykke.Service.RateCalculator.Core
+﻿using System;
+using Lykke.SettingsReader.Attributes;
+
+namespace Lykke.Service.RateCalculator.Core
 {
     public class AppSettings
     {
         public RateCalculatorSettings RateCalculatorService { get; set; }
         public SlackNotificationsSettings SlackNotifications { get; set; }
         public MarketProfileServiceClientSettings MarketProfileServiceClient { get; set; }
+        public AssetsServiceClientSettings AssetsServiceClient { get; set; }
     }
 
     public class RateCalculatorSettings
@@ -15,9 +19,8 @@
 
     public class DbSettings
     {
+        [AzureTableCheck]
         public string LogsConnString { get; set; }
-        public string HLiquidityConnString { get; set; }
-        public string DictsConnString { get; set; }
     }
 
     public class CacheSettings
@@ -60,6 +63,15 @@
 
     public class MarketProfileServiceClientSettings
     {
+        [HttpCheck("api/isalive")]
         public string ServiceUrl { get; set; }
+    }
+
+    public class AssetsServiceClientSettings
+    {
+        [HttpCheck("api/isalive")]
+        public string ServiceUrl { get; set; }
+
+        public TimeSpan ExpirationPeriod { get; set; }
     }
 }

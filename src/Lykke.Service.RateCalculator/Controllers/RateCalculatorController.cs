@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Lykke.Service.RateCalculator.Client;
+using Lykke.Service.Assets.Client.Models;
 using Lykke.Service.RateCalculator.Core.Domain;
 using Lykke.Service.RateCalculator.Core.Services;
 using Microsoft.AspNetCore.Mvc;

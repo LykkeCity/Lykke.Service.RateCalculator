@@ -1,34 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Common;
+using Lykke.Service.Assets.Client;
+using Lykke.Service.Assets.Client.Cache;
+using Lykke.Service.Assets.Client.Models;
+using Lykke.Service.Assets.Client.Models.Extensions;
 using Lykke.Service.MarketProfile.Client;
 using Lykke.Service.RateCalculator.Core.Domain;
 using Lykke.Service.RateCalculator.Core.Services;
+using MoreLinq;
 
 namespace Lykke.Service.RateCalculator.Services
 {
     public class RateCalculatorService : IRateCalculatorService
     {
-        private readonly CachedDataDictionary<string, IAsset> _assetsDict;
-        private readonly CachedDataDictionary<string, IAssetPair> _assetPairsDict;
+        private readonly IAssetsServiceWithCache _assetsServiceWithCache;
         private readonly IOrderBooksService _orderBooksService;
         private readonly ILykkeMarketProfile _marketProfileServiceClient;
 
         public RateCalculatorService(
-            CachedDataDictionary<string, IAsset> assetsDict,
-            CachedDataDictionary<string, IAssetPair> assetPairsDict,
+            IAssetsServiceWithCache assetsServiceWithCache,
             IOrderBooksService orderBooksService,
             ILykkeMarketProfile marketProfileServiceClient)
         {
-            _assetsDict = assetsDict;
-            _assetPairsDict = assetPairsDict;
+            _assetsServiceWithCache = assetsServiceWithCache;
             _orderBooksService = orderBooksService;
             _marketProfileServiceClient = marketProfileServiceClient;
         }
 
-        public double GetRate(string neededAssetId, IAssetPair assetPair, double price)
+        public double GetRate(string neededAssetId, AssetPair assetPair, double price)
         {
             var inverted = assetPair.IsInverted(neededAssetId);
             int accuracy = inverted ? assetPair.Accuracy : assetPair.InvertedAccuracy;
@@ -39,18 +42,21 @@ namespace Lykke.Service.RateCalculator.Services
 
         public async Task<IEnumerable<BalanceRecordWithBase>> FillBaseAssetData(IEnumerable<IBalanceRecord> balanceRecords, string baseAssetId)
         {
-            List<BalanceRecordWithBase> result = new List<BalanceRecordWithBase>();
+            var result = new List<BalanceRecordWithBase>();
+
             var marketProfile = await GetMarketProfileRemoteAsync();
 
-            foreach (var record in balanceRecords)
+            foreach (var chunk in balanceRecords.Batch(10))
             {
-                result.Add(new BalanceRecordWithBase
+                var task = chunk.SelectAsync(async x => new BalanceRecordWithBase
                 {
-                    AssetId = record.AssetId,
-                    Balance = record.Balance,
+                    AssetId = x.AssetId,
+                    Balance = x.Balance,
                     BaseAssetId = baseAssetId,
-                    AmountInBase = await GetAmountInBaseWithProfile(record.AssetId, record.Balance, baseAssetId, marketProfile)
+                    AmountInBase = await GetAmountInBaseWithProfile(x.AssetId, x.Balance, baseAssetId, marketProfile)
                 });
+
+                result.AddRange(await task);
             }
 
             return result;
@@ -71,7 +77,7 @@ namespace Lykke.Service.RateCalculator.Services
 
             foreach (var record in balanceRecords)
             {
-                result.Add(new BalanceRecord{AssetId = toAssetId, Balance = await GetAmountInBaseWithProfile(record.AssetId, record.Balance, toAssetId, marketProfile)});
+                result.Add(new BalanceRecord { AssetId = toAssetId, Balance = await GetAmountInBaseWithProfile(record.AssetId, record.Balance, toAssetId, marketProfile) });
             }
 
             return result;
@@ -84,7 +90,7 @@ namespace Lykke.Service.RateCalculator.Services
             if (assetFrom == assetTo)
                 return amount;
 
-            var assetPair = (await _assetPairsDict.Values()).PairWithAssets(assetFrom, assetTo);
+            var assetPair = (await _assetsServiceWithCache.GetAllAssetPairsAsync()).PairWithAssets(assetFrom, assetTo);
 
             if (Math.Abs(amount) < double.Epsilon || assetPair == null ||
                 marketProfileData.Profile.All(x => x.Asset != assetPair.Id))
@@ -96,7 +102,7 @@ namespace Lykke.Service.RateCalculator.Services
             if (Math.Abs(bestPrice) < double.Epsilon)
                 return 0;
 
-            var toAsset = await _assetsDict.GetItemAsync(assetTo);
+            var toAsset = await _assetsServiceWithCache.TryGetAssetAsync(assetTo);
 
             var price = assetPair.BaseAssetId == assetFrom ? bestPrice : 1 / bestPrice;
 
@@ -110,19 +116,25 @@ namespace Lykke.Service.RateCalculator.Services
             if (assetFrom == assetTo)
                 return amount;
 
-            var assetPair = (await _assetPairsDict.Values()).PairWithAssets(assetFrom, assetTo);
-
-            if (Math.Abs(amount) < double.Epsilon || assetPair == null ||
-                marketProfileData.Profile.All(x => x.Asset != assetPair.Id))
+            if (Math.Abs(amount) < double.Epsilon)
                 return 0;
 
-            var profile = marketProfileData.Profile.First(x => x.Asset == assetPair.Id);
+            var assetPair = (await _assetsServiceWithCache.GetAllAssetPairsAsync()).PairWithAssets(assetFrom, assetTo);
+
+            if (assetPair == null)
+                return 0;
+
+            var profile = marketProfileData.Profile.FirstOrDefault(x => x.Asset == assetPair.Id);
+
+            if (profile == null)
+                return 0;
+
             var bestPrice = assetPair.IsInverted(assetTo) ? profile.Bid : profile.Ask;
 
             if (Math.Abs(bestPrice) < double.Epsilon)
                 return 0;
 
-            var toAsset = await _assetsDict.GetItemAsync(assetTo);
+            var toAsset = await _assetsServiceWithCache.TryGetAssetAsync(assetTo);
 
             var price = assetPair.BaseAssetId == assetFrom ? bestPrice : 1 / bestPrice;
 
@@ -131,8 +143,9 @@ namespace Lykke.Service.RateCalculator.Services
 
         public async Task<IEnumerable<ConversionResult>> GetMarketAmountInBase(IEnumerable<AssetWithAmount> assetsFrom, string assetIdTo, OrderAction orderAction)
         {
-            var assetPairsDict = await _assetPairsDict.Values();
-            var assetsDict = await _assetsDict.GetDictionaryAsync();
+            var assetPairsDict = await _assetsServiceWithCache.GetAllAssetPairsAsync();
+
+            var assetsDict = (await _assetsServiceWithCache.GetAllAssetsAsync(true)).ToDictionary(x => x.Id);
             var marketProfile = await GetMarketProfileRemoteAsync();
 
             var assetWithAmounts = assetsFrom as AssetWithAmount[] ?? assetsFrom.ToArray();
@@ -156,7 +169,7 @@ namespace Lykke.Service.RateCalculator.Services
 
         public async Task<double> GetBestPrice(string assetPairId, bool buy)
         {
-            var assetPair = (await _assetPairsDict.Values()).SingleOrDefault(a => a.Id == assetPairId);
+            var assetPair = await _assetsServiceWithCache.TryGetAssetPairAsync(assetPairId);
             if (assetPair == null)
                 return 0;
 
@@ -186,7 +199,7 @@ namespace Lykke.Service.RateCalculator.Services
         }
 
         private ConversionResult GetMarketAmountInBase(OrderAction orderAction, IEnumerable<IOrderBook> orderBooks, AssetWithAmount from,
-            string assetTo, IDictionary<string, IAsset> assetsDict, IEnumerable<IAssetPair> assetPairs, Core.Domain.MarketProfile marketProfile)
+            string assetTo, IReadOnlyDictionary<string, Asset> assetsDict, IEnumerable<AssetPair> assetPairs, Core.Domain.MarketProfile marketProfile)
         {
             var result = new ConversionResult();
             var assetPair = assetPairs.PairWithAssets(from.AssetId, assetTo);
@@ -261,7 +274,7 @@ namespace Lykke.Service.RateCalculator.Services
             return result;
         }
 
-        private bool IsInputValid(AssetWithAmount assetFrom, string assetTo, IDictionary<string, IAsset> assets)
+        private bool IsInputValid(AssetWithAmount assetFrom, string assetTo, IReadOnlyDictionary<string, Asset> assets)
         {
             if (assetFrom.Amount <= 0 || !assets.ContainsKey(assetTo) || !assets.ContainsKey(assetFrom.AssetId))
                 return false;
