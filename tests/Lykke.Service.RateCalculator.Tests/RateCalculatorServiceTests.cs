@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
+using Lykke.Service.Assets.Client.Models;
 using Lykke.Service.RateCalculator.Core.Domain;
 using Lykke.Service.RateCalculator.Core.Services;
 using Xunit;
@@ -69,7 +71,7 @@ namespace Lykke.Service.RateCalculator.Tests
         public async Task Is_Single_FillBaseAssetData_Correct()
         {
             var balance = new BalanceRecord {AssetId = "BTC", Balance = 1};
-
+            
             var balanceWithBaseAsset = await _service.FillBaseAssetData(balance, "USD");
 
             Assert.NotNull(balanceWithBaseAsset);

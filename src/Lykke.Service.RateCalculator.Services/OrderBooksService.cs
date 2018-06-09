@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Common;
+using Lykke.Service.Assets.Client;
+using Lykke.Service.Assets.Client.Models;
 using Lykke.Service.RateCalculator.Core;
 using Lykke.Service.RateCalculator.Core.Domain;
 using Lykke.Service.RateCalculator.Core.Services;
@@ -11,22 +13,22 @@ namespace Lykke.Service.RateCalculator.Services
     public class OrderBookService : IOrderBooksService
     {
         private readonly IDistributedCache _distributedCache;
-        private readonly CachedDataDictionary<string, IAssetPair> _assetPairsDict;
+        private readonly IAssetsServiceWithCache _assetsServiceWithCache;
         private readonly RateCalculatorSettings _settings;
 
         public OrderBookService(
             IDistributedCache distributedCache,
-            CachedDataDictionary<string, IAssetPair> assetPairsDict,
-            RateCalculatorSettings settings)
+            RateCalculatorSettings settings, 
+            IAssetsServiceWithCache assetsServiceWithCache)
         {
             _distributedCache = distributedCache;
-            _assetPairsDict = assetPairsDict;
             _settings = settings;
+            _assetsServiceWithCache = assetsServiceWithCache;
         }
 
-        public async Task<IEnumerable<IOrderBook>> GetAllAsync(IEnumerable<IAssetPair> assetPairs = null)
+        public async Task<IEnumerable<IOrderBook>> GetAllAsync(IEnumerable<AssetPair> assetPairs = null)
         {
-            var assetPairsToProcess = assetPairs ?? await _assetPairsDict.Values();
+            var assetPairsToProcess = assetPairs ?? await _assetsServiceWithCache.GetAllAssetPairsAsync();
 
             var orderBooks = new List<IOrderBook>();
 
@@ -49,9 +51,9 @@ namespace Lykke.Service.RateCalculator.Services
             return orderBooks;
         }
 
-        public async Task<IEnumerable<IOrderBook>> GetAsync(IAssetPair assetPair)
+        public async Task<IEnumerable<IOrderBook>> GetAsync(AssetPair assetPair)
         {
-            return await GetAllAsync(new List<IAssetPair> {assetPair});
+            return await GetAllAsync(new List<AssetPair> {assetPair});
         }
     }
 }
