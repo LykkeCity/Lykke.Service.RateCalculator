@@ -1,17 +1,16 @@
 ﻿using System;
-using System.Linq;
 using Autofac;
-using Common;
+using Autofac.Extensions.DependencyInjection;
 using Common.Log;
+using Lykke.Service.Assets.Client;
 using Lykke.Service.MarketProfile.Client;
-using Lykke.Service.RateCalculator.AzureRepositories;
 using Lykke.Service.RateCalculator.Core;
-using Lykke.Service.RateCalculator.Core.Domain;
 using Lykke.Service.RateCalculator.Core.Services;
 using Lykke.Service.RateCalculator.Services;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Redis;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Lykke.Service.RateCalculator.Modules
 {
@@ -19,11 +18,13 @@ namespace Lykke.Service.RateCalculator.Modules
     {
         private readonly IReloadingManager<AppSettings> _settings;
         private readonly ILog _log;
+        private readonly ServiceCollection _serviceCollection;
 
         public ServiceModule(IReloadingManager<AppSettings> settings, ILog log)
         {
             _settings = settings;
             _log = log;
+            _serviceCollection = new ServiceCollection();
         }
 
         protected override void Load(ContainerBuilder builder)
@@ -45,30 +46,9 @@ namespace Lykke.Service.RateCalculator.Modules
             builder.RegisterType<ShutdownManager>()
                 .As<IShutdownManager>();
 
-            builder.RegisterInstance<IAssetsRepository>(
-                AzureRepoFactories.CreateAssetsRepository(_settings.ConnectionString(x => x.RateCalculatorService.Db.DictsConnString), _log)
-            ).SingleInstance();
-
-            builder.RegisterInstance<IAssetPairsRepository>(
-                AzureRepoFactories.CreateAssetPairsRepository(_settings.ConnectionString(x => x.RateCalculatorService.Db.DictsConnString), _log)
-            ).SingleInstance();
-
-            builder.RegisterInstance<IAssetPairBestPriceRepository>(
-                AzureRepoFactories.CreateBestPriceRepository(_settings.ConnectionString(x => x.RateCalculatorService.Db.HLiquidityConnString), _log)
-            ).SingleInstance();
-
-            builder.Register(x =>
-            {
-                var ctx = x.Resolve<IComponentContext>();
-                return new CachedDataDictionary<string, IAsset>(async () => (await ctx.Resolve<IAssetsRepository>().GetAssetsAsync()).ToDictionary(itm => itm.Id));
-            }).SingleInstance();
-
-            builder.Register(x =>
-            {
-                var ctx = x.Resolve<IComponentContext>();
-                return new CachedDataDictionary<string, IAssetPair>(
-                    async () => (await ctx.Resolve<IAssetPairsRepository>().GetAllAsync()).ToDictionary(itm => itm.Id));
-            }).SingleInstance();
+            _serviceCollection.RegisterAssetsClient(AssetServiceSettings.Create(
+                new Uri(_settings.CurrentValue.AssetsServiceClient.ServiceUrl),
+                _settings.CurrentValue.AssetsServiceClient.ExpirationPeriod), _log);
 
             var financeRedisCache = new RedisCache(new RedisCacheOptions
             {
@@ -91,6 +71,8 @@ namespace Lykke.Service.RateCalculator.Modules
             builder.RegisterType<LykkeMarketProfile>()
                 .As<ILykkeMarketProfile>()
                 .WithParameter("baseUri", new Uri(_settings.CurrentValue.MarketProfileServiceClient.ServiceUrl));
+
+            builder.Populate(_serviceCollection);
         }
     }
 }

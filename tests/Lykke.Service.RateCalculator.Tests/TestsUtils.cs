@@ -1,17 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using AzureStorage.Tables;
-using Lykke.Service.RateCalculator.AzureRepositories;
-using Lykke.Service.RateCalculator.Core.Domain;
+﻿using System.Collections.Generic;
+using Lykke.Service.Assets.Client.Models;
 
 namespace Lykke.Service.RateCalculator.Tests
 {
     public static class TestsUtils
     {
-        public static AssetsRepository GetAssetsRepository()
+        public static List<Asset> GetAssetsRepository()
         {
-            var repository = new AssetsRepository(new NoSqlTableInMemory<AssetEntity>());
-            var assets = new List<IAsset>
+            var assets = new List<Asset>
             {
                 new Asset
                 {
@@ -30,18 +26,12 @@ namespace Lykke.Service.RateCalculator.Tests
                 }
             };
 
-            foreach (var asset in assets)
-            {
-                repository.AddAssetAsync(asset).Wait();
-            }
-
-            return repository;
+            return assets;
         }
 
-        public static AssetPairsRepository GetAssetPairsRepository()
+        public static List<AssetPair> GetAssetPairsRepository()
         {
-            var repository = new AssetPairsRepository(new NoSqlTableInMemory<AssetPairEntity>());
-            var assetsPairs = new List<IAssetPair>
+            var assetsPairs = new List<AssetPair>
             {
                 new AssetPair
                 {
@@ -69,12 +59,7 @@ namespace Lykke.Service.RateCalculator.Tests
                 }
             };
 
-            foreach (var pair in assetsPairs)
-            {
-                repository.AddAsync(pair).Wait();
-            }
-
-            return repository;
+            return assetsPairs;
         }
     }
 }

@@ -25,18 +25,6 @@ namespace Lykke.Service.RateCalculator.Tests
 
             builder.RegisterModule(new RepositoriesModule());
 
-            builder.Register(x =>
-            {
-                var ctx = x.Resolve<IComponentContext>();
-                return new CachedDataDictionary<string, IAsset>(async () => (await ctx.Resolve<IAssetsRepository>().GetAssetsAsync()).ToDictionary(itm => itm.Id));
-            }).SingleInstance();
-
-            builder.Register(x =>
-            {
-                var ctx = x.Resolve<IComponentContext>();
-                return new CachedDataDictionary<string, IAssetPair>(async () => (await ctx.Resolve<IAssetPairsRepository>().GetAllAsync()).ToDictionary(itm => itm.Id));
-            }).SingleInstance();
-
             builder.RegisterInstance(
                 new Mock<IOrderBooksService>().Object
             ).SingleInstance();
