@@ -5,20 +5,30 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Common;
 using Common.Log;
+using JetBrains.Annotations;
+using Lykke.Common.Log;
 using Lykke.Service.RateCalculator.Client.AutorestClient;
 using Lykke.Service.RateCalculator.Client.AutorestClient.Models;
 
 namespace Lykke.Service.RateCalculator.Client
 {
+    [PublicAPI]
     public class RateCalculatorClient : IRateCalculatorClient, IDisposable
     {
         private readonly ILog _log;
         private RateCalculatorAPI _service;
 
+        [Obsolete]
         public RateCalculatorClient(string serviceUrl, ILog log)
         {
             _service = new RateCalculatorAPI(new Uri(serviceUrl), new HttpClient());
             _log = log;
+        }
+
+        public RateCalculatorClient(string serviceUrl, ILogFactory logFactory)
+        {
+            _service = new RateCalculatorAPI(new Uri(serviceUrl), new HttpClient());
+            _log = logFactory.CreateLog(this);
         }
 
         public void Dispose()
