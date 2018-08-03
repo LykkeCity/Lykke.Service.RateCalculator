@@ -9,7 +9,7 @@ namespace Lykke.Service.RateCalculator.Client
     [PublicAPI]
     public static class AutofacExtension
     {
-        [Obsolete]
+        [Obsolete("Please, use the overload which does not explicitly require ILog.")]
         public static void RegisterRateCalculatorClient(this ContainerBuilder builder, string serviceUrl, ILog log)
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
