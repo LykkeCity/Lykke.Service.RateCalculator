@@ -18,7 +18,7 @@ namespace Lykke.Service.RateCalculator.Client
         private readonly ILog _log;
         private RateCalculatorAPI _service;
 
-        [Obsolete]
+        [Obsolete("Please, use the overload which consumes ILogFactory instead.")]
         public RateCalculatorClient(string serviceUrl, ILog log)
         {
             _service = new RateCalculatorAPI(new Uri(serviceUrl), new HttpClient());
