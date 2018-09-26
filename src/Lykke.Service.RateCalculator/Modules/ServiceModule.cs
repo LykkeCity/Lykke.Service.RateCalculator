@@ -46,9 +46,7 @@ namespace Lykke.Service.RateCalculator.Modules
             builder.RegisterType<ShutdownManager>()
                 .As<IShutdownManager>();
 
-            _serviceCollection.RegisterAssetsClient(AssetServiceSettings.Create(
-                new Uri(_settings.CurrentValue.AssetsServiceClient.ServiceUrl),
-                _settings.CurrentValue.AssetsServiceClient.ExpirationPeriod), _log);
+            builder.RegisterAssetsClient(_settings.CurrentValue.AssetsServiceClient.ServiceUrl);
 
             var financeRedisCache = new RedisCache(new RedisCacheOptions
             {

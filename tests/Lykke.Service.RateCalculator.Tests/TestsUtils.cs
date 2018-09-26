@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Lykke.Service.Assets.Client.Models;
+using Lykke.Service.Assets.Client.Models.v3;
 
 namespace Lykke.Service.RateCalculator.Tests
 {
