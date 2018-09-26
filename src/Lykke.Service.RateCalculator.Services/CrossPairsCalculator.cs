@@ -8,7 +8,7 @@ namespace Lykke.Service.RateCalculator.Services
     internal class NodeInfo
     {
         internal double Weight { get; set; }
-        internal bool Staright { get; set; }
+        internal bool Straight { get; set; }
         internal double Bid { get; set; }
         internal double Ask { get; set; }
     }
@@ -35,14 +35,14 @@ namespace Lykke.Service.RateCalculator.Services
                 _graph[pair.BaseAssetId][pair.QuotingAssetId] = new NodeInfo
                 {
                     Weight = weight,
-                    Staright = true,
+                    Straight = true,
                     Bid = feedData.Bid,
                     Ask = feedData.Ask,
                 };
                 _graph[pair.QuotingAssetId][pair.BaseAssetId] = new NodeInfo
                 {
                     Weight = weight,
-                    Staright = false,
+                    Straight = false,
                     Bid = feedData.Bid,
                     Ask = feedData.Ask,
                 };
@@ -145,9 +145,9 @@ namespace Lykke.Service.RateCalculator.Services
 
                 var nodeInfo = _graph[path[i]][path[i + 1]];
 
-                if (nodeInfo.Staright && Math.Abs(nodeInfo.Bid) > double.Epsilon)
+                if (nodeInfo.Straight && Math.Abs(nodeInfo.Bid) > double.Epsilon)
                     result *= nodeInfo.Bid;
-                else if (!nodeInfo.Staright && Math.Abs(nodeInfo.Ask) > double.Epsilon)
+                else if (!nodeInfo.Straight && Math.Abs(nodeInfo.Ask) > double.Epsilon)
                     result *= 1 / nodeInfo.Ask;
                 else
                     return 0;

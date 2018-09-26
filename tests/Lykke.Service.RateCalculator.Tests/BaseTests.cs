@@ -1,8 +1,4 @@
-﻿using System.Linq;
-using Autofac;
-using Common;
-using Lykke.Service.MarketProfile.Client;
-using Lykke.Service.RateCalculator.Core.Domain;
+﻿using Autofac;
 using Lykke.Service.RateCalculator.Core.Services;
 using Lykke.Service.RateCalculator.Services;
 using Lykke.Service.RateCalculator.Tests.Modules;
