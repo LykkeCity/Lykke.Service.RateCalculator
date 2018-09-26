@@ -30,6 +30,8 @@ namespace Lykke.Service.RateCalculator.Services
             _assetsReadModelRepository = assetsReadModelRepository;
             _orderBooksService = orderBooksService;
             _marketProfileServiceClient = marketProfileServiceClient;
+
+            _assetPairsReadModelRepository.GetAll(); //warming up asset pairs cache
         }
 
         public double GetRate(string neededAssetId, AssetPair assetPair, double price)
@@ -47,18 +49,18 @@ namespace Lykke.Service.RateCalculator.Services
             var result = new List<BalanceRecordWithBase>();
 
             var marketProfile = await GetMarketProfileRemoteAsync();
+            var crossPairCalc = new CrossPairsCalculator(marketProfile, _assetPairsReadModelRepository);
 
             foreach (var chunk in balanceRecords.Batch(10))
             {
-                var task = chunk.SelectAsync(async x => new BalanceRecordWithBase
-                {
-                    AssetId = x.AssetId,
-                    Balance = x.Balance,
-                    BaseAssetId = baseAssetId,
-                    AmountInBase = await GetAmountInBaseWithProfile(x.AssetId, x.Balance, baseAssetId, marketProfile)
-                });
-
-                result.AddRange(await task);
+                result.AddRange(
+                    chunk.Select(x => new BalanceRecordWithBase
+                    {
+                        AssetId = x.AssetId,
+                        Balance = x.Balance,
+                        BaseAssetId = baseAssetId,
+                        AmountInBase = GetCrossPairsAmountInBase(x.AssetId, x.Balance, baseAssetId, crossPairCalc),
+                    }));
             }
 
             return result;
@@ -77,86 +79,54 @@ namespace Lykke.Service.RateCalculator.Services
             var result = new List<BalanceRecord>();
 
             var marketProfile = await GetMarketProfileRemoteAsync();
+            var crossPairCalc = new CrossPairsCalculator(marketProfile, _assetPairsReadModelRepository);
 
             foreach (var record in balanceRecords)
             {
                 result.Add(new BalanceRecord
                 {
                     AssetId = toAssetId,
-                    Balance = await GetAmountInBaseWithProfile(record.AssetId, record.Balance, toAssetId, marketProfile)
+                    Balance = GetCrossPairsAmountInBase(record.AssetId, record.Balance, toAssetId, crossPairCalc),
                 });
             }
 
             return result;
         }
 
-        public async Task<double> GetAmountInBase(string assetFrom, double amount, string assetTo)
+        public Task<double> GetAmountInBase(string assetFrom, double amount, string assetTo)
         {
-            var marketProfileData = await GetMarketProfileRemoteAsync();
-
-            if (assetFrom == assetTo)
-                return amount;
-
-            var assetPair = GetPairWithAssets(
-                _assetPairsReadModelRepository.GetAll(),
+            return GetAmountInBaseWithProfile(
                 assetFrom,
-                assetTo);
-
-            if (Math.Abs(amount) < double.Epsilon || assetPair == null ||
-                marketProfileData.Profile.All(x => x.Asset != assetPair.Id))
-                return 0;
-
-            var profile = marketProfileData.Profile.First(x => x.Asset == assetPair.Id);
-            var bestPrice = IsInverted(assetPair, assetTo) ? profile.Bid : profile.Ask;
-
-            if (Math.Abs(bestPrice) < double.Epsilon)
-                return 0;
-
-            var toAsset = _assetsReadModelRepository.TryGet(assetTo);
-
-            var price = assetPair.BaseAssetId == assetFrom ? bestPrice : 1 / bestPrice;
-
-            return (price * amount).TruncateDecimalPlaces(toAsset.Accuracy);
+                amount,
+                assetTo,
+                null);
         }
 
-        public async Task<double> GetAmountInBaseWithProfile(string assetFrom, double amount, string assetTo,
+        public async Task<double> GetAmountInBaseWithProfile(
+            string assetFrom,
+            double amount,
+            string assetTo,
             Core.Domain.MarketProfile marketProfile)
         {
-            var marketProfileData = marketProfile ?? await GetMarketProfileRemoteAsync();
-
             if (assetFrom == assetTo)
                 return amount;
 
             if (Math.Abs(amount) < double.Epsilon)
                 return 0;
 
-            var assetPair = GetPairWithAssets(
-                _assetPairsReadModelRepository.GetAll(),
+            var marketProfileData = marketProfile ?? await GetMarketProfileRemoteAsync();
+            var crossPairCalc = new CrossPairsCalculator(marketProfileData, _assetPairsReadModelRepository);
+            return GetCrossPairsAmountInBase(
                 assetFrom,
-                assetTo);
-
-            if (assetPair == null)
-                return 0;
-
-            var profile = marketProfileData.Profile.FirstOrDefault(x => x.Asset == assetPair.Id);
-
-            if (profile == null)
-                return 0;
-
-            var bestPrice = IsInverted(assetPair, assetTo) ? profile.Bid : profile.Ask;
-
-            if (Math.Abs(bestPrice) < double.Epsilon)
-                return 0;
-
-            var toAsset = _assetsReadModelRepository.TryGet(assetTo);
-
-            var price = assetPair.BaseAssetId == assetFrom ? bestPrice : 1 / bestPrice;
-
-            return (price * amount).TruncateDecimalPlaces(toAsset.Accuracy);
+                amount,
+                assetTo,
+                crossPairCalc);
         }
 
-        public async Task<IEnumerable<ConversionResult>> GetMarketAmountInBase(IEnumerable<AssetWithAmount> assetsFrom,
-            string assetIdTo, OrderAction orderAction)
+        public async Task<IEnumerable<ConversionResult>> GetMarketAmountInBase(
+            IEnumerable<AssetWithAmount> assetsFrom,
+            string assetIdTo,
+            OrderAction orderAction)
         {
             var assetPairsDict = _assetPairsReadModelRepository.GetAll();
 
@@ -202,6 +172,27 @@ namespace Lykke.Service.RateCalculator.Services
                 return price;
 
             return GetBestPrice(orderBooks, assetPairId, !buy);
+        }
+
+        private double GetCrossPairsAmountInBase(
+            string assetFrom,
+            double amount,
+            string assetTo,
+            CrossPairsCalculator crossPairsCalculator)
+        {
+            if (assetFrom == assetTo)
+                return amount;
+
+            if (Math.Abs(amount) < double.Epsilon)
+                return 0;
+
+            var convertedAmount = crossPairsCalculator.Convert(
+                assetFrom,
+                assetTo,
+                amount);
+
+            var toAsset = _assetsReadModelRepository.TryGet(assetTo);
+            return convertedAmount.TruncateDecimalPlaces(toAsset.Accuracy);
         }
 
         private Assets.Client.Models.v3.AssetPair GetPairWithAssets(
@@ -336,7 +327,10 @@ namespace Lykke.Service.RateCalculator.Services
             return assetPair.QuotingAssetId == targetAsset;
         }
 
-        private double GetRate(string neededAssetId, Assets.Client.Models.v3.AssetPair assetPair, double price)
+        private double GetRate(
+            string neededAssetId,
+            Assets.Client.Models.v3.AssetPair assetPair,
+            double price)
         {
             var inverted = IsInverted(assetPair, neededAssetId);
             int accuracy = inverted ? assetPair.Accuracy : assetPair.InvertedAccuracy;
