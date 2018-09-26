@@ -8,7 +8,6 @@ namespace Lykke.Service.RateCalculator.Services
     internal class NodeInfo
     {
         internal double Weight { get; set; }
-        internal string AssetPairId { get; set; }
         internal bool Staright { get; set; }
         internal double Bid { get; set; }
         internal double Ask { get; set; }
@@ -36,7 +35,6 @@ namespace Lykke.Service.RateCalculator.Services
                 _graph[pair.BaseAssetId][pair.QuotingAssetId] = new NodeInfo
                 {
                     Weight = weight,
-                    AssetPairId = pair.Id,
                     Staright = true,
                     Bid = feedData.Bid,
                     Ask = feedData.Ask,
@@ -44,7 +42,6 @@ namespace Lykke.Service.RateCalculator.Services
                 _graph[pair.QuotingAssetId][pair.BaseAssetId] = new NodeInfo
                 {
                     Weight = weight,
-                    AssetPairId = pair.Id,
                     Staright = false,
                     Bid = feedData.Bid,
                     Ask = feedData.Ask,
