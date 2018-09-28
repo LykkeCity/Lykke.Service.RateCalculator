@@ -72,7 +72,15 @@ namespace Lykke.Service.RateCalculator.Tests
                     InvertedAccuracy = 5,
                     BaseAssetId = "SLR",
                     QuotingAssetId = "USD"
-                }
+                },
+                new AssetPair
+                {
+                    Id = "SLRCHF",
+                    Accuracy = 8,
+                    InvertedAccuracy = 5,
+                    BaseAssetId = "SLR",
+                    QuotingAssetId = "CHF"
+                },
             };
 
             return assetsPairs;

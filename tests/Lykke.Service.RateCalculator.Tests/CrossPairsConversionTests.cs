@@ -89,5 +89,26 @@ namespace Lykke.Service.RateCalculator.Tests
             var amountInBase = await _service.GetAmountInBaseWithProfile("CHF", 1, "BTC", marketProfile);
             Assert.Equal((1 / chfAsk / btcAsk).TruncateDecimalPlaces(TestsUtils.CryptoAccuracy), amountInBase);
         }
+
+        [Fact]
+        public async Task BestPathConversion()
+        {
+            var marketProfile = new Core.Domain.MarketProfile();
+            var btcUsdBid = 8600;
+            var slrUsdAsk = 0.4508;
+            // USD wights are lower than CHF, so best par from BTC to SLR is through USD.
+            var feedData = new List<FeedData>
+            {
+                new FeedData {Asset = "BTCUSD", Ask = 9000, Bid = btcUsdBid, DateTime = DateTime.UtcNow},
+                new FeedData {Asset = "SLRUSD", Ask = slrUsdAsk, Bid = 0.0003, DateTime = DateTime.UtcNow},
+                new FeedData {Asset = "BTCCHF", Ask = 0.98599, Bid = 0.97925, DateTime = DateTime.UtcNow},
+                new FeedData {Asset = "SLRCHF", Ask = 0.4466, Bid = 0.0005, DateTime = DateTime.UtcNow},
+            };
+
+            marketProfile.Profile = feedData;
+
+            var amountInBase = await _service.GetAmountInBaseWithProfile("BTC", 1, "SLR", marketProfile);
+            Assert.Equal((btcUsdBid / slrUsdAsk).TruncateDecimalPlaces(TestsUtils.CryptoAccuracy), amountInBase);
+        }
     }
 }
