@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Common;
-using Lykke.Service.Assets.Client;
-using Lykke.Service.Assets.Client.Models;
+using Lykke.Service.Assets.Client.Models.v3;
+using Lykke.Service.Assets.Client.ReadModels;
 using Lykke.Service.RateCalculator.Core;
 using Lykke.Service.RateCalculator.Core.Domain;
 using Lykke.Service.RateCalculator.Core.Services;
@@ -13,29 +14,29 @@ namespace Lykke.Service.RateCalculator.Services
     public class OrderBookService : IOrderBooksService
     {
         private readonly IDistributedCache _distributedCache;
-        private readonly IAssetsServiceWithCache _assetsServiceWithCache;
+        private readonly IAssetPairsReadModelRepository _assetPairsReadModelRepository;
         private readonly RateCalculatorSettings _settings;
 
         public OrderBookService(
             IDistributedCache distributedCache,
-            RateCalculatorSettings settings, 
-            IAssetsServiceWithCache assetsServiceWithCache)
+            RateCalculatorSettings settings,
+            IAssetPairsReadModelRepository assetPairsReadModelRepository)
         {
             _distributedCache = distributedCache;
             _settings = settings;
-            _assetsServiceWithCache = assetsServiceWithCache;
+            _assetPairsReadModelRepository = assetPairsReadModelRepository;
         }
 
         public async Task<IEnumerable<IOrderBook>> GetAllAsync(IEnumerable<AssetPair> assetPairs = null)
         {
-            var assetPairsToProcess = assetPairs ?? await _assetsServiceWithCache.GetAllAssetPairsAsync();
+            var assetPairIds = assetPairs?.Select(i => i.Id) ?? _assetPairsReadModelRepository.GetAll().Select(i => i.Id);
 
             var orderBooks = new List<IOrderBook>();
 
-            foreach (var pair in assetPairsToProcess)
+            foreach (var pairId in assetPairIds)
             {
-                var buyBookJson = _distributedCache.GetStringAsync(_settings.CacheSettings.GetOrderBookKey(pair.Id, true));
-                var sellBookJson = _distributedCache.GetStringAsync(_settings.CacheSettings.GetOrderBookKey(pair.Id, false));
+                var buyBookJson = _distributedCache.GetStringAsync(_settings.CacheSettings.GetOrderBookKey(pairId, true));
+                var sellBookJson = _distributedCache.GetStringAsync(_settings.CacheSettings.GetOrderBookKey(pairId, false));
 
                 var buyBook = (await buyBookJson)?.DeserializeJson<OrderBook>();
 

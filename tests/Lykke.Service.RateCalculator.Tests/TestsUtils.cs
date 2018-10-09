@@ -1,11 +1,14 @@
 ﻿using System.Collections.Generic;
-using Lykke.Service.Assets.Client.Models;
+using Lykke.Service.Assets.Client.Models.v3;
 
 namespace Lykke.Service.RateCalculator.Tests
 {
-    public static class TestsUtils
+    internal static class TestsUtils
     {
-        public static List<Asset> GetAssetsRepository()
+        internal static int FiatAccuracy = 2;
+        internal static int CryptoAccuracy = 8;
+
+        internal static List<Asset> GetAssetsRepository()
         {
             var assets = new List<Asset>
             {
@@ -16,20 +19,25 @@ namespace Lykke.Service.RateCalculator.Tests
                 },
                 new Asset
                 {
-                    Accuracy = 2,
+                    Accuracy = FiatAccuracy,
                     Id = "USD"
                 },
                 new Asset
                 {
-                    Accuracy = 2,
+                    Accuracy = FiatAccuracy,
                     Id = "CHF"
+                },
+                new Asset
+                {
+                    Accuracy = CryptoAccuracy,
+                    Id = "SLR"
                 }
             };
 
             return assets;
         }
 
-        public static List<AssetPair> GetAssetPairsRepository()
+        internal static List<AssetPair> GetAssetPairsRepository()
         {
             var assetsPairs = new List<AssetPair>
             {
@@ -56,7 +64,23 @@ namespace Lykke.Service.RateCalculator.Tests
                     InvertedAccuracy = 2,
                     BaseAssetId = "USD",
                     QuotingAssetId = "CHF"
-                }
+                },
+                new AssetPair
+                {
+                    Id = "SLRUSD",
+                    Accuracy = 8,
+                    InvertedAccuracy = 5,
+                    BaseAssetId = "SLR",
+                    QuotingAssetId = "USD"
+                },
+                new AssetPair
+                {
+                    Id = "SLRCHF",
+                    Accuracy = 8,
+                    InvertedAccuracy = 5,
+                    BaseAssetId = "SLR",
+                    QuotingAssetId = "CHF"
+                },
             };
 
             return assetsPairs;
