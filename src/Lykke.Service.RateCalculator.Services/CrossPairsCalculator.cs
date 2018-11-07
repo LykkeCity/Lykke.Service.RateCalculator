@@ -160,7 +160,11 @@ namespace Lykke.Service.RateCalculator.Services
                 if (!_links.ContainsKey(path[i]) || !_links[path[i]].ContainsKey(path[i + 1]))
                     return 0;
 
-                var nodeInfo = pricesData[$"{path[i]}_{path[i + 1]}"];
+                string pairPriceKey = $"{path[i]}_{path[i + 1]}";
+                if (!pricesData.ContainsKey(pairPriceKey))
+                    return 0;
+
+                var nodeInfo = pricesData[pairPriceKey];
 
                 if (nodeInfo.Straight && Math.Abs(nodeInfo.Bid) > double.Epsilon)
                     result *= nodeInfo.Bid;
