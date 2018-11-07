@@ -19,6 +19,7 @@ namespace Lykke.Service.RateCalculator.Services
         private readonly IAssetsReadModelRepository _assetsReadModelRepository;
         private readonly IOrderBooksService _orderBooksService;
         private readonly ILykkeMarketProfile _marketProfileServiceClient;
+        private readonly CrossPairsCalculator _crossPairsCalculator;
 
         public RateCalculatorService(
             IAssetPairsReadModelRepository assetPairsReadModelRepository,
@@ -32,6 +33,8 @@ namespace Lykke.Service.RateCalculator.Services
             _marketProfileServiceClient = marketProfileServiceClient;
 
             _assetPairsReadModelRepository.GetAll(); //warming up asset pairs cache
+
+            _crossPairsCalculator = new CrossPairsCalculator(_assetPairsReadModelRepository);
         }
 
         public double GetRate(string neededAssetId, AssetPair assetPair, double price)
@@ -49,10 +52,7 @@ namespace Lykke.Service.RateCalculator.Services
             var result = new List<BalanceRecordWithBase>();
 
             var marketProfile = await GetMarketProfileRemoteAsync();
-            var crossPairCalc = new CrossPairsCalculator(
-                marketProfile,
-                _assetPairsReadModelRepository,
-                balanceRecords.Select(i => i.AssetId));
+            var pricesData = _crossPairsCalculator.PrepareForConversion(marketProfile);
 
             foreach (var chunk in balanceRecords.Batch(10))
             {
@@ -62,7 +62,11 @@ namespace Lykke.Service.RateCalculator.Services
                         AssetId = x.AssetId,
                         Balance = x.Balance,
                         BaseAssetId = baseAssetId,
-                        AmountInBase = GetCrossPairsAmountInBase(x.AssetId, x.Balance, baseAssetId, crossPairCalc),
+                        AmountInBase = GetCrossPairsAmountInBase(
+                            x.AssetId,
+                            x.Balance,
+                            baseAssetId,
+                            pricesData),
                     }));
             }
 
@@ -82,17 +86,18 @@ namespace Lykke.Service.RateCalculator.Services
             var result = new List<BalanceRecord>();
 
             var marketProfile = await GetMarketProfileRemoteAsync();
-            var crossPairCalc = new CrossPairsCalculator(
-                marketProfile,
-                _assetPairsReadModelRepository,
-                balanceRecords.Select(i => i.AssetId));
+            var pricesData = _crossPairsCalculator.PrepareForConversion(marketProfile);
 
             foreach (var record in balanceRecords)
             {
                 result.Add(new BalanceRecord
                 {
                     AssetId = toAssetId,
-                    Balance = GetCrossPairsAmountInBase(record.AssetId, record.Balance, toAssetId, crossPairCalc),
+                    Balance = GetCrossPairsAmountInBase(
+                        record.AssetId,
+                        record.Balance,
+                        toAssetId,
+                        pricesData),
                 });
             }
 
@@ -121,15 +126,12 @@ namespace Lykke.Service.RateCalculator.Services
                 return 0;
 
             var marketProfileData = marketProfile ?? await GetMarketProfileRemoteAsync();
-            var crossPairCalc = new CrossPairsCalculator(
-                marketProfileData,
-                _assetPairsReadModelRepository,
-                new[] {assetFrom});
+            var pricesData = _crossPairsCalculator.PrepareForConversion(marketProfileData);
             return GetCrossPairsAmountInBase(
                 assetFrom,
                 amount,
                 assetTo,
-                crossPairCalc);
+                pricesData);
         }
 
         public async Task<IEnumerable<ConversionResult>> GetMarketAmountInBase(
@@ -187,7 +189,7 @@ namespace Lykke.Service.RateCalculator.Services
             string assetFrom,
             double amount,
             string assetTo,
-            CrossPairsCalculator crossPairsCalculator)
+            Dictionary<string, NodeInfo> pricesData)
         {
             if (assetFrom == assetTo)
                 return amount;
@@ -195,10 +197,11 @@ namespace Lykke.Service.RateCalculator.Services
             if (Math.Abs(amount) < double.Epsilon)
                 return 0;
 
-            var convertedAmount = crossPairsCalculator.Convert(
+            var convertedAmount = _crossPairsCalculator.Convert(
                 assetFrom,
                 assetTo,
-                amount);
+                amount,
+                pricesData);
 
             var toAsset = _assetsReadModelRepository.TryGet(assetTo);
             return convertedAmount.TruncateDecimalPlaces(toAsset.Accuracy);
