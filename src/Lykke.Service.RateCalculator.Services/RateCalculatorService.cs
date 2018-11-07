@@ -49,7 +49,10 @@ namespace Lykke.Service.RateCalculator.Services
             var result = new List<BalanceRecordWithBase>();
 
             var marketProfile = await GetMarketProfileRemoteAsync();
-            var crossPairCalc = new CrossPairsCalculator(marketProfile, _assetPairsReadModelRepository);
+            var crossPairCalc = new CrossPairsCalculator(
+                marketProfile,
+                _assetPairsReadModelRepository,
+                balanceRecords.Select(i => i.AssetId));
 
             foreach (var chunk in balanceRecords.Batch(10))
             {
@@ -79,7 +82,10 @@ namespace Lykke.Service.RateCalculator.Services
             var result = new List<BalanceRecord>();
 
             var marketProfile = await GetMarketProfileRemoteAsync();
-            var crossPairCalc = new CrossPairsCalculator(marketProfile, _assetPairsReadModelRepository);
+            var crossPairCalc = new CrossPairsCalculator(
+                marketProfile,
+                _assetPairsReadModelRepository,
+                balanceRecords.Select(i => i.AssetId));
 
             foreach (var record in balanceRecords)
             {
@@ -115,7 +121,10 @@ namespace Lykke.Service.RateCalculator.Services
                 return 0;
 
             var marketProfileData = marketProfile ?? await GetMarketProfileRemoteAsync();
-            var crossPairCalc = new CrossPairsCalculator(marketProfileData, _assetPairsReadModelRepository);
+            var crossPairCalc = new CrossPairsCalculator(
+                marketProfileData,
+                _assetPairsReadModelRepository,
+                new[] {assetFrom});
             return GetCrossPairsAmountInBase(
                 assetFrom,
                 amount,
