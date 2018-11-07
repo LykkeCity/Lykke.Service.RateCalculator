@@ -161,10 +161,8 @@ namespace Lykke.Service.RateCalculator.Services
                     return 0;
 
                 string pairPriceKey = $"{path[i]}_{path[i + 1]}";
-                if (!pricesData.ContainsKey(pairPriceKey))
+                if (!pricesData.TryGetValue(pairPriceKey, out var nodeInfo))
                     return 0;
-
-                var nodeInfo = pricesData[pairPriceKey];
 
                 if (nodeInfo.Straight && Math.Abs(nodeInfo.Bid) > double.Epsilon)
                     result *= nodeInfo.Bid;
