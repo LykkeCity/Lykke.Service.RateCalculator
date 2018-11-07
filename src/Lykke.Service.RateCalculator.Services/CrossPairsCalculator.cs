@@ -7,7 +7,6 @@ namespace Lykke.Service.RateCalculator.Services
 {
     internal class NodeInfo
     {
-        internal double Weight { get; set; }
         internal bool Straight { get; set; }
         internal double Bid { get; set; }
         internal double Ask { get; set; }
@@ -19,7 +18,10 @@ namespace Lykke.Service.RateCalculator.Services
         private readonly Dictionary<string, Dictionary<string, NodeInfo>> _graph = new Dictionary<string, Dictionary<string, NodeInfo>>();
         private readonly Dictionary<string, Dictionary<string, string>> _bestMoves = new Dictionary<string, Dictionary<string, string>>();
 
-        internal CrossPairsCalculator(Core.Domain.MarketProfile marketProfile, IAssetPairsReadModelRepository assetPairsReadModelRepository)
+        internal CrossPairsCalculator(
+            Core.Domain.MarketProfile marketProfile,
+            IAssetPairsReadModelRepository assetPairsReadModelRepository,
+            IEnumerable<string> targetAssetIds)
         {
             foreach (var feedData in marketProfile.Profile)
             {
@@ -31,24 +33,21 @@ namespace Lykke.Service.RateCalculator.Services
                     _graph.Add(pair.BaseAssetId, new Dictionary<string, NodeInfo>());
                 if (!_graph.ContainsKey(pair.QuotingAssetId))
                     _graph.Add(pair.QuotingAssetId, new Dictionary<string, NodeInfo>());
-                var weight = InitWeight(pair.BaseAssetId, pair.QuotingAssetId);
                 _graph[pair.BaseAssetId][pair.QuotingAssetId] = new NodeInfo
                 {
-                    Weight = weight,
                     Straight = true,
                     Bid = feedData.Bid,
                     Ask = feedData.Ask,
                 };
                 _graph[pair.QuotingAssetId][pair.BaseAssetId] = new NodeInfo
                 {
-                    Weight = weight,
                     Straight = false,
                     Bid = feedData.Bid,
                     Ask = feedData.Ask,
                 };
             }
 
-            foreach (var assetId in _graph.Keys)
+            foreach (var assetId in targetAssetIds.ToHashSet())
             {
                 _bestMoves[assetId] = BuildGraphData(assetId);
             }
@@ -103,7 +102,7 @@ namespace Lykke.Service.RateCalculator.Services
                 foreach (var otherAssetId in _graph[curId].Keys)
                 {
                     var to = otherAssetId;
-                    var weight = _graph[curId][otherAssetId].Weight;
+                    var weight = InitWeight(curId, otherAssetId);
                     if (weightsDict[curId] + weight < weightsDict[to])
                     {
                         weightsDict[to] = weightsDict[curId] + weight;
@@ -124,13 +123,12 @@ namespace Lykke.Service.RateCalculator.Services
             var next = assetTo;
             while (next != assetFrom)
             {
-                result.Add(next);
+                result.Insert(0, next);
                 if (!path.ContainsKey(next))
                     break;
                 next = path[next];
             }
-            result.Add(assetFrom);
-            result.Reverse();
+            result.Insert(0, assetFrom);
             return result;
         }
 
