@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using Lykke.Service.Assets.Client.ReadModels;
 
@@ -7,7 +8,6 @@ namespace Lykke.Service.RateCalculator.Services
 {
     internal class NodeInfo
     {
-        internal double Weight { get; set; }
         internal bool Straight { get; set; }
         internal double Bid { get; set; }
         internal double Ask { get; set; }
@@ -16,54 +16,70 @@ namespace Lykke.Service.RateCalculator.Services
     // Algorithm is described here - https://lykkex.atlassian.net/wiki/spaces/LKEWALLET/pages/521404481/Cross-pair+conversion
     internal class CrossPairsCalculator
     {
-        private readonly Dictionary<string, Dictionary<string, NodeInfo>> _graph = new Dictionary<string, Dictionary<string, NodeInfo>>();
-        private readonly Dictionary<string, Dictionary<string, string>> _bestMoves = new Dictionary<string, Dictionary<string, string>>();
+        private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, byte>> _links = new ConcurrentDictionary<string, ConcurrentDictionary<string, byte>>();
+        private readonly ConcurrentDictionary<string, Dictionary<string, string>> _bestMoves = new ConcurrentDictionary<string, Dictionary<string, string>>();
+        private readonly IAssetPairsReadModelRepository _assetPairsReadModelRepository;
 
-        internal CrossPairsCalculator(Core.Domain.MarketProfile marketProfile, IAssetPairsReadModelRepository assetPairsReadModelRepository)
+        internal CrossPairsCalculator(IAssetPairsReadModelRepository assetPairsReadModelRepository)
         {
+            _assetPairsReadModelRepository = assetPairsReadModelRepository;
+        }
+
+        internal Dictionary<string, NodeInfo> PrepareForConversion(Core.Domain.MarketProfile marketProfile)
+        {
+            var result = new Dictionary<string, NodeInfo>();
+            var assetIdsToBuild = new HashSet<string>();
+
             foreach (var feedData in marketProfile.Profile)
             {
-                var pair = assetPairsReadModelRepository.TryGet(feedData.Asset);
+                var pair = _assetPairsReadModelRepository.TryGet(feedData.Asset);
                 if (pair == null)
                     continue;
 
-                if (!_graph.ContainsKey(pair.BaseAssetId))
-                    _graph.Add(pair.BaseAssetId, new Dictionary<string, NodeInfo>());
-                if (!_graph.ContainsKey(pair.QuotingAssetId))
-                    _graph.Add(pair.QuotingAssetId, new Dictionary<string, NodeInfo>());
-                var weight = InitWeight(pair.BaseAssetId, pair.QuotingAssetId);
-                _graph[pair.BaseAssetId][pair.QuotingAssetId] = new NodeInfo
+                result[$"{pair.BaseAssetId}_{pair.QuotingAssetId}"] = new NodeInfo
                 {
-                    Weight = weight,
                     Straight = true,
                     Bid = feedData.Bid,
                     Ask = feedData.Ask,
                 };
-                _graph[pair.QuotingAssetId][pair.BaseAssetId] = new NodeInfo
+                result[$"{pair.QuotingAssetId}_{pair.BaseAssetId}"] = new NodeInfo
                 {
-                    Weight = weight,
                     Straight = false,
                     Bid = feedData.Bid,
                     Ask = feedData.Ask,
                 };
+
+                if (!_links.ContainsKey(pair.BaseAssetId))
+                    _links.TryAdd(pair.BaseAssetId, new ConcurrentDictionary<string, byte>());
+                if (!_links.ContainsKey(pair.QuotingAssetId))
+                    _links.TryAdd(pair.QuotingAssetId, new ConcurrentDictionary<string, byte>());
+                bool added = _links[pair.BaseAssetId].TryAdd(pair.QuotingAssetId, 0);
+                if (added)
+                    assetIdsToBuild.Add(pair.BaseAssetId);
+                added = _links[pair.QuotingAssetId].TryAdd(pair.BaseAssetId, 0);
+                if (added)
+                    assetIdsToBuild.Add(pair.QuotingAssetId);
             }
 
-            foreach (var assetId in _graph.Keys)
+            foreach (var assetId in assetIdsToBuild)
             {
-                _bestMoves[assetId] = BuildGraphData(assetId);
+                BuildBestAssetIdLinks(assetId);
             }
+
+            return result;
         }
 
         internal double Convert(
             string assetFrom,
             string assetTo,
-            double amount)
+            double amount,
+            Dictionary<string, NodeInfo> pricesData)
         {
             var path = GetPath(assetFrom, assetTo);
             if (path == null)
                 return 0;
 
-            var conversionRate = GetPathConversionRate(path);
+            var conversionRate = GetPathConversionRate(path, pricesData);
             if (Math.Abs(conversionRate) < double.Epsilon)
                 return 0;
 
@@ -81,37 +97,39 @@ namespace Lykke.Service.RateCalculator.Services
             return 1.1111;
         }
 
-        private Dictionary<string, string> BuildGraphData(string startAssetId)
+        private void BuildBestAssetIdLinks(string startAssetId)
         {
-            var weightsDict = _graph.Keys.ToDictionary(i => i, i => double.MaxValue);
+            var weightsDict = _links.Keys.ToDictionary(i => i, i => double.MaxValue);
             var usedAssets = new HashSet<string>();
 
             weightsDict[startAssetId] = 0;
 
-            var result = new Dictionary<string, string>();
-            for (int i = 0; i < _graph.Keys.Count; ++i)
+            var bestLinks = new Dictionary<string, string>();
+            for (int i = 0; i < weightsDict.Count; ++i)
             {
                 string curId = null;
-                foreach (var otherAssetId in _graph.Keys)
+                foreach (var otherAssetId in weightsDict.Keys)
                 {
                     if (!usedAssets.Contains(otherAssetId) && (curId == null || weightsDict[otherAssetId] < weightsDict[curId]))
                         curId = otherAssetId;
                 }
                 if (weightsDict[curId] == double.MaxValue)
                     break;
+
                 usedAssets.Add(curId);
-                foreach (var otherAssetId in _graph[curId].Keys)
+                foreach (var otherAssetId in _links[curId].Keys)
                 {
                     var to = otherAssetId;
-                    var weight = _graph[curId][otherAssetId].Weight;
+                    var weight = InitWeight(curId, otherAssetId);
                     if (weightsDict[curId] + weight < weightsDict[to])
                     {
                         weightsDict[to] = weightsDict[curId] + weight;
-                        result[to] = curId;
+                        bestLinks[to] = curId;
                     }
                 }
             }
-            return result;
+
+            _bestMoves.AddOrUpdate(startAssetId, bestLinks, (k, o) => bestLinks);
         }
 
         private List<string> GetPath(string assetFrom, string assetTo)
@@ -124,26 +142,27 @@ namespace Lykke.Service.RateCalculator.Services
             var next = assetTo;
             while (next != assetFrom)
             {
-                result.Add(next);
+                result.Insert(0, next);
                 if (!path.ContainsKey(next))
                     break;
                 next = path[next];
             }
-            result.Add(assetFrom);
-            result.Reverse();
+            result.Insert(0, assetFrom);
             return result;
         }
 
-        private double GetPathConversionRate(List<string> path)
+        private double GetPathConversionRate(List<string> path, Dictionary<string, NodeInfo> pricesData)
         {
             double result = 1;
 
             for (int i = 0; i < path.Count - 1; ++i)
             {
-                if (!_graph.ContainsKey(path[i]) || !_graph[path[i]].ContainsKey(path[i + 1]))
+                if (!_links.ContainsKey(path[i]) || !_links[path[i]].ContainsKey(path[i + 1]))
                     return 0;
 
-                var nodeInfo = _graph[path[i]][path[i + 1]];
+                string pairPriceKey = $"{path[i]}_{path[i + 1]}";
+                if (!pricesData.TryGetValue(pairPriceKey, out var nodeInfo))
+                    return 0;
 
                 if (nodeInfo.Straight && Math.Abs(nodeInfo.Bid) > double.Epsilon)
                     result *= nodeInfo.Bid;
