@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Common;
+using Common.Log;
 using Lykke.Service.Assets.Client.Models;
 using Lykke.Service.Assets.Client.Models.Extensions;
 using Lykke.Service.Assets.Client.ReadModels;
@@ -15,6 +16,7 @@ namespace Lykke.Service.RateCalculator.Services
 {
     public class RateCalculatorService : IRateCalculatorService
     {
+        private readonly ILog _log;
         private readonly IAssetPairsReadModelRepository _assetPairsReadModelRepository;
         private readonly IAssetsReadModelRepository _assetsReadModelRepository;
         private readonly IOrderBooksService _orderBooksService;
@@ -22,11 +24,13 @@ namespace Lykke.Service.RateCalculator.Services
         private readonly CrossPairsCalculator _crossPairsCalculator;
 
         public RateCalculatorService(
+            ILog log,
             IAssetPairsReadModelRepository assetPairsReadModelRepository,
             IAssetsReadModelRepository assetsReadModelRepository,
             IOrderBooksService orderBooksService,
             ILykkeMarketProfile marketProfileServiceClient)
         {
+            _log = log;
             _assetPairsReadModelRepository = assetPairsReadModelRepository;
             _assetsReadModelRepository = assetsReadModelRepository;
             _orderBooksService = orderBooksService;
@@ -204,6 +208,11 @@ namespace Lykke.Service.RateCalculator.Services
                 pricesData);
 
             var toAsset = _assetsReadModelRepository.TryGet(assetTo);
+            if (toAsset == null)
+            {
+                _log.WriteWarning(nameof(GetCrossPairsAmountInBase), assetFrom, $"Couldn't find asset by id = {assetTo}");
+                return convertedAmount;
+            }
             return convertedAmount.TruncateDecimalPlaces(toAsset.Accuracy);
         }
 
