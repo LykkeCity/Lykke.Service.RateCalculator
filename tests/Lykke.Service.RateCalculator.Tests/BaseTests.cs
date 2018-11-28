@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using Common.Log;
 using Lykke.Service.RateCalculator.Core.Services;
 using Lykke.Service.RateCalculator.Services;
 using Lykke.Service.RateCalculator.Tests.Modules;
@@ -18,6 +19,8 @@ namespace Lykke.Service.RateCalculator.Tests
         private void RegisterDependencies()
         {
             var builder = new ContainerBuilder();
+
+            builder.RegisterInstance(new EmptyLog()).As<ILog>().SingleInstance();
 
             builder.RegisterModule(new RepositoriesModule());
 
