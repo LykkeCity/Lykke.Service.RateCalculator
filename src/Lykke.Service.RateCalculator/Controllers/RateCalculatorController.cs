@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Lykke.Service.Assets.Client.Models;
 using Lykke.Service.RateCalculator.Core.Domain;
@@ -22,7 +21,15 @@ namespace Lykke.Service.RateCalculator.Controllers
         [Route("GetRate/{assetId}/{price}")]
         public Task<double> GetRate(string assetId, double price, [FromBody]AssetPair assetPair)
         {
-            var rate = _rateCalculatorService.GetRate(assetId, assetPair, price);
+            var rate = _rateCalculatorService.GetRate(
+                assetId,
+                new AssetPairRateModel
+                {
+                    QuotingAssetId = assetPair.QuotingAssetId,
+                    Accuracy = assetPair.Accuracy,
+                    InvertedAccuracy = assetPair.InvertedAccuracy,
+                },
+                price);
             return Task.FromResult(rate);
         }
 

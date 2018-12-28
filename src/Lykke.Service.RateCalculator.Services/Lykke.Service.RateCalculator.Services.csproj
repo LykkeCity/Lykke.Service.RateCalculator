@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Flurl.Http" Version="1.2.0" />
-    <PackageReference Include="Lykke.Service.Assets.Client" Version="5.1.0" />
+    <PackageReference Include="Lykke.Service.Assets.Client" Version="5.2.0" />
     <PackageReference Include="Lykke.Service.MarketProfile.Client" Version="1.1.0" />
   </ItemGroup>
 
