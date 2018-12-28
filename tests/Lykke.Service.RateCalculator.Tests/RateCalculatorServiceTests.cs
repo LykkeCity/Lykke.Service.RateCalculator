@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
-using Lykke.Service.Assets.Client.Models;
 using Lykke.Service.RateCalculator.Core.Domain;
 using Lykke.Service.RateCalculator.Core.Services;
 using Xunit;
@@ -22,10 +21,8 @@ namespace Lykke.Service.RateCalculator.Tests
         [Fact]
         public void Is_GetRate_Correct()
         {
-            var assetPair = new AssetPair
+            var assetPair = new AssetPairRateModel
             {
-                Id = "BTCUSD",
-                BaseAssetId = "BTC",
                 QuotingAssetId = "USD",
                 Accuracy = 3,
                 InvertedAccuracy = 8
@@ -38,10 +35,8 @@ namespace Lykke.Service.RateCalculator.Tests
         [Fact]
         public void Is_GetRate_Inverted_Correct()
         {
-            var assetPair = new AssetPair
+            var assetPair = new AssetPairRateModel
             {
-                Id = "BTCUSD",
-                BaseAssetId = "BTC",
                 QuotingAssetId = "USD",
                 Accuracy = 3,
                 InvertedAccuracy = 8

@@ -29,7 +29,9 @@ namespace Lykke.Service.RateCalculator.Modules
 
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterInstance(_settings.CurrentValue.RateCalculatorService)
+            var appSettings = _settings.CurrentValue;
+
+            builder.RegisterInstance(appSettings.RateCalculatorService)
                 .SingleInstance();
 
             builder.RegisterInstance(_log)
@@ -46,12 +48,12 @@ namespace Lykke.Service.RateCalculator.Modules
             builder.RegisterType<ShutdownManager>()
                 .As<IShutdownManager>();
 
-            builder.RegisterAssetsClient(_settings.CurrentValue.AssetsServiceClient.ServiceUrl);
+            builder.RegisterAssetsClient(appSettings.AssetsServiceClient.ServiceUrl);
 
             var financeRedisCache = new RedisCache(new RedisCacheOptions
             {
-                Configuration = _settings.CurrentValue.RateCalculatorService.CacheSettings.RedisConfiguration,
-                InstanceName = _settings.CurrentValue.RateCalculatorService.CacheSettings.FinanceDataCacheInstance
+                Configuration = appSettings.RateCalculatorService.CacheSettings.RedisConfiguration,
+                InstanceName = appSettings.RateCalculatorService.CacheSettings.FinanceDataCacheInstance
             });
 
             builder.RegisterInstance(financeRedisCache)
@@ -64,11 +66,12 @@ namespace Lykke.Service.RateCalculator.Modules
 
             builder.RegisterType<OrderBookService>()
                 .As<IOrderBooksService>()
-                .SingleInstance();
+                .SingleInstance()
+                .WithParameter(TypedParameter.From(appSettings.RateCalculatorService.CacheSettings.OrderBooksCacheKeyPattern));
 
             builder.RegisterType<LykkeMarketProfile>()
                 .As<ILykkeMarketProfile>()
-                .WithParameter("baseUri", new Uri(_settings.CurrentValue.MarketProfileServiceClient.ServiceUrl));
+                .WithParameter("baseUri", new Uri(appSettings.MarketProfileServiceClient.ServiceUrl));
 
             builder.Populate(_serviceCollection);
         }

@@ -1,7 +1,7 @@
 ﻿using System;
 using Lykke.SettingsReader.Attributes;
 
-namespace Lykke.Service.RateCalculator.Core
+namespace Lykke.Service.RateCalculator
 {
     public class AppSettings
     {
@@ -15,6 +15,7 @@ namespace Lykke.Service.RateCalculator.Core
     {
         public DbSettings Db { get; set; }
         public CacheSettings CacheSettings { get; set; }
+        public CqrsSettings CqrsSettings { get; set; }
     }
 
     public class DbSettings
@@ -32,19 +33,6 @@ namespace Lykke.Service.RateCalculator.Core
 
         public string OrderBooksCacheKeyPattern { get; set; }
         public string AssetsForClientCacheKeyPattern { get; set; }
-    }
-
-    public static class CacheSettingsExt
-    {
-        public static string GetOrderBookKey(this CacheSettings settings, string assetPairId, bool isBuy)
-        {
-            return string.Format(settings.OrderBooksCacheKeyPattern, assetPairId, isBuy);
-        }
-
-        public static string GetAssetsForClientKey(this CacheSettings settings, string clientId, bool isIosDevice)
-        {
-            return string.Format(settings.AssetsForClientCacheKeyPattern, clientId, isIosDevice);
-        }
     }
 
     public class SlackNotificationsSettings
@@ -73,5 +61,11 @@ namespace Lykke.Service.RateCalculator.Core
         public string ServiceUrl { get; set; }
 
         public TimeSpan ExpirationPeriod { get; set; }
+    }
+
+    public class CqrsSettings
+    {
+        [AmqpCheck]
+        public string RabbitConnectionString { get; set; }
     }
 }

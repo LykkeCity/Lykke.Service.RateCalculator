@@ -4,8 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Common;
 using Common.Log;
-using Lykke.Service.Assets.Client.Models;
-using Lykke.Service.Assets.Client.Models.Extensions;
 using Lykke.Service.Assets.Client.ReadModels;
 using Lykke.Service.MarketProfile.Client;
 using Lykke.Service.RateCalculator.Core.Domain;
@@ -41,9 +39,9 @@ namespace Lykke.Service.RateCalculator.Services
             _crossPairsCalculator = new CrossPairsCalculator(_assetPairsReadModelRepository);
         }
 
-        public double GetRate(string neededAssetId, AssetPair assetPair, double price)
+        public double GetRate(string neededAssetId, AssetPairRateModel assetPair, double price)
         {
-            var inverted = assetPair.IsInverted(neededAssetId);
+            var inverted = assetPair.QuotingAssetId == neededAssetId;
             int accuracy = inverted ? assetPair.Accuracy : assetPair.InvertedAccuracy;
             var rate = inverted ? price : 1 / price;
 
@@ -151,7 +149,8 @@ namespace Lykke.Service.RateCalculator.Services
             var assetWithAmounts = assetsFrom as AssetWithAmount[] ?? assetsFrom.ToArray();
             var assetPairsToProcess = assetWithAmounts
                 .Select(assetFrom => GetPairWithAssets(assetPairsDict, assetFrom.AssetId, assetIdTo))
-                .Where(p => p != null);
+                .Where(p => p != null)
+                .Select(a => a.Id);
 
             var orderBooks = (await _orderBooksService.GetAllAsync(assetPairsToProcess)).ToArray();
 
@@ -175,11 +174,7 @@ namespace Lykke.Service.RateCalculator.Services
 
         public async Task<double> GetBestPrice(string assetPairId, bool buy)
         {
-            var assetPair = _assetPairsReadModelRepository.TryGet(assetPairId);
-            if (assetPair == null)
-                return 0;
-
-            var orderBooks = (await _orderBooksService.GetAsync(assetPair)).ToArray();
+            var orderBooks = (await _orderBooksService.GetAsync(assetPairId)).ToArray();
 
             var price = GetBestPrice(orderBooks, assetPairId, buy);
 

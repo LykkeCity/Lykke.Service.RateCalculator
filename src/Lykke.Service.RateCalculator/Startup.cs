@@ -53,16 +53,19 @@ namespace Lykke.Service.RateCalculator
                 });
 
                 var builder = new ContainerBuilder();
-                var appSettings = Configuration.LoadSettings<AppSettings>(o =>
+                var settingsManager = Configuration.LoadSettings<AppSettings>(o =>
                 {
                     o.SetConnString(s => s.SlackNotifications.AzureQueue.ConnectionString);
                     o.SetQueueName(s => s.SlackNotifications.AzureQueue.QueueName);
                     o.SenderName = $"{AppEnvironment.Name} {AppEnvironment.Version}";
                 });
-                Log = CreateLogWithSlack(services, appSettings);
+                Log = CreateLogWithSlack(services, settingsManager);
 
                 builder.Populate(services);
-                builder.RegisterModule(new ServiceModule(appSettings, Log));
+
+                builder.RegisterModule(new ServiceModule(settingsManager, Log));
+                builder.RegisterModule(new CqrsModule(settingsManager, Log));
+
                 ApplicationContainer = builder.Build();
 
                 return new AutofacServiceProvider(ApplicationContainer);
