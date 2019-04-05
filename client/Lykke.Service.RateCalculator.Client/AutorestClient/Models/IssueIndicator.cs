@@ -10,23 +10,23 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient.Models
     using Newtonsoft.Json;
     using System.Linq;
 
-    public partial class AssetWithAmount
+    public partial class IssueIndicator
     {
         /// <summary>
-        /// Initializes a new instance of the AssetWithAmount class.
+        /// Initializes a new instance of the IssueIndicator class.
         /// </summary>
-        public AssetWithAmount()
+        public IssueIndicator()
         {
             CustomInit();
         }
 
         /// <summary>
-        /// Initializes a new instance of the AssetWithAmount class.
+        /// Initializes a new instance of the IssueIndicator class.
         /// </summary>
-        public AssetWithAmount(string assetId, double amount)
+        public IssueIndicator(string type, string value)
         {
-            AssetId = assetId;
-            Amount = amount;
+            Type = type;
+            Value = value;
             CustomInit();
         }
 
@@ -37,13 +37,13 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient.Models
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "AssetId")]
-        public string AssetId { get; set; }
+        [JsonProperty(PropertyName = "type")]
+        public string Type { get; set; }
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "Amount")]
-        public double Amount { get; set; }
+        [JsonProperty(PropertyName = "value")]
+        public string Value { get; set; }
 
         /// <summary>
         /// Validate the object.
@@ -53,9 +53,13 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient.Models
         /// </exception>
         public virtual void Validate()
         {
-            if (AssetId == null)
+            if (Type == null)
             {
-                throw new ValidationException(ValidationRules.CannotBeNull, "AssetId");
+                throw new ValidationException(ValidationRules.CannotBeNull, "Type");
+            }
+            if (Value == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "Value");
             }
         }
     }
