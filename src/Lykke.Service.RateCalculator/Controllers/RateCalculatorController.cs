@@ -88,5 +88,14 @@ namespace Lykke.Service.RateCalculator.Controllers
         {
             return await _rateCalculatorService.GetBestPrice(assetPair, isBuy);
         }
+
+        [HttpPost]
+        [Route("GetConversionRatesForAssets/{baseAssetId}")]
+        public async Task<IEnumerable<AssetConversionRate>> GetConversionRatesForAssets(
+            [FromRoute]string baseAssetId, 
+            [FromBody]IEnumerable<AssetRequest> assetIds)
+        {
+            return await _rateCalculatorService.GetConversionRateForAssets(assetIds, baseAssetId);
+        }
     }
 }

@@ -8,25 +8,27 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient.Models
 {
     using Microsoft.Rest;
     using Newtonsoft.Json;
+    using System.Collections;
+    using System.Collections.Generic;
     using System.Linq;
 
-    public partial class AssetWithAmount
+    public partial class ErrorResponse
     {
         /// <summary>
-        /// Initializes a new instance of the AssetWithAmount class.
+        /// Initializes a new instance of the ErrorResponse class.
         /// </summary>
-        public AssetWithAmount()
+        public ErrorResponse()
         {
             CustomInit();
         }
 
         /// <summary>
-        /// Initializes a new instance of the AssetWithAmount class.
+        /// Initializes a new instance of the ErrorResponse class.
         /// </summary>
-        public AssetWithAmount(string assetId, double amount)
+        public ErrorResponse(string errorMessage, IDictionary<string, IList<string>> modelErrors)
         {
-            AssetId = assetId;
-            Amount = amount;
+            ErrorMessage = errorMessage;
+            ModelErrors = modelErrors;
             CustomInit();
         }
 
@@ -37,13 +39,13 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient.Models
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "AssetId")]
-        public string AssetId { get; set; }
+        [JsonProperty(PropertyName = "ErrorMessage")]
+        public string ErrorMessage { get; set; }
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "Amount")]
-        public double Amount { get; set; }
+        [JsonProperty(PropertyName = "ModelErrors")]
+        public IDictionary<string, IList<string>> ModelErrors { get; set; }
 
         /// <summary>
         /// Validate the object.
@@ -53,9 +55,13 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient.Models
         /// </exception>
         public virtual void Validate()
         {
-            if (AssetId == null)
+            if (ErrorMessage == null)
             {
-                throw new ValidationException(ValidationRules.CannotBeNull, "AssetId");
+                throw new ValidationException(ValidationRules.CannotBeNull, "ErrorMessage");
+            }
+            if (ModelErrors == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "ModelErrors");
             }
         }
     }

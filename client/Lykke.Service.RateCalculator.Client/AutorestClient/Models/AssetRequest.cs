@@ -10,23 +10,22 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient.Models
     using Newtonsoft.Json;
     using System.Linq;
 
-    public partial class AssetWithAmount
+    public partial class AssetRequest
     {
         /// <summary>
-        /// Initializes a new instance of the AssetWithAmount class.
+        /// Initializes a new instance of the AssetRequest class.
         /// </summary>
-        public AssetWithAmount()
+        public AssetRequest()
         {
             CustomInit();
         }
 
         /// <summary>
-        /// Initializes a new instance of the AssetWithAmount class.
+        /// Initializes a new instance of the AssetRequest class.
         /// </summary>
-        public AssetWithAmount(string assetId, double amount)
+        public AssetRequest(string assetId)
         {
             AssetId = assetId;
-            Amount = amount;
             CustomInit();
         }
 
@@ -39,11 +38,6 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient.Models
         /// </summary>
         [JsonProperty(PropertyName = "AssetId")]
         public string AssetId { get; set; }
-
-        /// <summary>
-        /// </summary>
-        [JsonProperty(PropertyName = "Amount")]
-        public double Amount { get; set; }
 
         /// <summary>
         /// Validate the object.

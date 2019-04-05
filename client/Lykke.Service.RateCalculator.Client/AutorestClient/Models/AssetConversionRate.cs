@@ -10,23 +10,24 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient.Models
     using Newtonsoft.Json;
     using System.Linq;
 
-    public partial class AssetWithAmount
+    public partial class AssetConversionRate
     {
         /// <summary>
-        /// Initializes a new instance of the AssetWithAmount class.
+        /// Initializes a new instance of the AssetConversionRate class.
         /// </summary>
-        public AssetWithAmount()
+        public AssetConversionRate()
         {
             CustomInit();
         }
 
         /// <summary>
-        /// Initializes a new instance of the AssetWithAmount class.
+        /// Initializes a new instance of the AssetConversionRate class.
         /// </summary>
-        public AssetWithAmount(string assetId, double amount)
+        public AssetConversionRate(string assetId, double conversionRate, string baseAssetId)
         {
             AssetId = assetId;
-            Amount = amount;
+            ConversionRate = conversionRate;
+            BaseAssetId = baseAssetId;
             CustomInit();
         }
 
@@ -42,8 +43,13 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient.Models
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "Amount")]
-        public double Amount { get; set; }
+        [JsonProperty(PropertyName = "ConversionRate")]
+        public double ConversionRate { get; set; }
+
+        /// <summary>
+        /// </summary>
+        [JsonProperty(PropertyName = "BaseAssetId")]
+        public string BaseAssetId { get; set; }
 
         /// <summary>
         /// Validate the object.
@@ -56,6 +62,10 @@ namespace Lykke.Service.RateCalculator.Client.AutorestClient.Models
             if (AssetId == null)
             {
                 throw new ValidationException(ValidationRules.CannotBeNull, "AssetId");
+            }
+            if (BaseAssetId == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "BaseAssetId");
             }
         }
     }
