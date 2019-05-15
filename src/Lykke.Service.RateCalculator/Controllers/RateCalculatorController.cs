@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Lykke.Service.Assets.Client.Models;
+﻿using Lykke.Service.Assets.Client.Models;
 using Lykke.Service.RateCalculator.Core.Domain;
 using Lykke.Service.RateCalculator.Core.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Lykke.Service.RateCalculator.Controllers
 {
@@ -80,6 +80,17 @@ namespace Lykke.Service.RateCalculator.Controllers
         public async Task<double> GetBestPrice(string assetPair, bool isBuy)
         {
             return await _rateCalculatorService.GetBestPrice(assetPair, isBuy);
+        }
+
+        [HttpPost]
+        [Route("GetConversionRatesForAssets/{baseAssetId}")]
+        public async Task<IEnumerable<AssetConversionRate>> GetConversionRatesForAssets(
+            [FromRoute]string baseAssetId, 
+            [FromBody]IEnumerable<AssetRequest> assetIds)
+        {
+            var assetIdsList = assetIds?.ToList();
+
+            return await _rateCalculatorService.GetConversionRateForAssets(assetIdsList, baseAssetId);
         }
     }
 }

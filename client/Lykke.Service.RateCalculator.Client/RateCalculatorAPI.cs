@@ -6,7 +6,7 @@ using System.Text;
 // ReSharper disable once CheckNamespace
 namespace Lykke.Service.RateCalculator.Client.AutorestClient
 {
-    internal partial class RateCalculatorAPI
+    public partial class RateCalculatorAPI
     {
         /// <inheritdoc />
         /// <summary>
