@@ -78,7 +78,7 @@ namespace Lykke.Service.RateCalculator.Services
         }
 
         public async Task<IEnumerable<AssetConversionRate>> GetConversionRateForAssets(
-            IEnumerable<AssetRequest> balanceRecords, string baseAssetId)
+            IReadOnlyCollection<AssetRequest> balanceRecords, string baseAssetId)
         {
             var result = new List<AssetConversionRate>();
 
