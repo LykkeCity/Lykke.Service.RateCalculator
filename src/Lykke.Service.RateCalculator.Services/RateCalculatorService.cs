@@ -83,18 +83,20 @@ namespace Lykke.Service.RateCalculator.Services
             var marketProfile = await GetMarketProfileRemoteAsync();
             var pricesData = _crossPairsCalculator.PrepareForConversion(marketProfile);
 
-            foreach (var chunk in balanceRecords.Batch(10))
+            if (balanceRecords != null &&
+                balanceRecords.Any())
             {
-                result.AddRange(
-                    chunk.Select(x => new AssetConversionRate
-                    {
-                        AssetId = x.AssetId,
-                        BaseAssetId = baseAssetId,
-                        ConversionRate = GetConversionRate(
-                            x.AssetId,
-                            baseAssetId,
-                            pricesData),
-                    }));
+                var assetConversionRates = balanceRecords.Select(x => new AssetConversionRate
+                {
+                    AssetId = x.AssetId,
+                    BaseAssetId = baseAssetId,
+                    ConversionRate = GetConversionRate(
+                        x.AssetId,
+                        baseAssetId,
+                        pricesData),
+                });
+
+                result.AddRange(assetConversionRates);
             }
 
             return result;
