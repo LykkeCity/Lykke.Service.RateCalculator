@@ -22,4 +22,8 @@
     <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.17" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="AutorestClient\" />
+  </ItemGroup>
+
 </Project>
