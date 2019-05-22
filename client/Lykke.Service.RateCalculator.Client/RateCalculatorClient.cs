@@ -164,20 +164,5 @@ namespace Lykke.Service.RateCalculator.Client
 
             return 0;
         }
-
-        public async Task<IEnumerable<AssetConversionRate>> GetConversionRatesForAssets(string baseAssetId, IEnumerable<AssetRequest> assetIds)
-        {
-            try
-            {
-                return await _service.ApiRateCalculatorGetConversionRatesForAssetsByBaseAssetIdPostAsync(baseAssetId,
-                    assetIds?.ToList());
-            }
-            catch (Exception ex)
-            {
-                await _log.WriteErrorAsync(nameof(RateCalculatorClient), nameof(GetConversionRatesForAssets), string.Empty, ex);
-            }
-
-            return null;
-        }
     }
 }

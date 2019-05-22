@@ -77,33 +77,6 @@ namespace Lykke.Service.RateCalculator.Services
             return result;
         }
 
-        public async Task<IEnumerable<AssetConversionRate>> GetConversionRateForAssets(
-            IReadOnlyCollection<AssetRequest> balanceRecords, string baseAssetId)
-        {
-            var result = new List<AssetConversionRate>();
-
-            var marketProfile = await GetMarketProfileRemoteAsync();
-            var pricesData = _crossPairsCalculator.PrepareForConversion(marketProfile);
-
-            if (balanceRecords != null &&
-                balanceRecords.Any())
-            {
-                var assetConversionRates = balanceRecords.Select(x => new AssetConversionRate
-                {
-                    AssetId = x.AssetId,
-                    BaseAssetId = baseAssetId,
-                    ConversionRate = GetConversionRate(
-                        x.AssetId,
-                        baseAssetId,
-                        pricesData),
-                });
-
-                result.AddRange(assetConversionRates);
-            }
-
-            return result;
-        }
-
         public async Task<BalanceRecordWithBase> FillBaseAssetData(IBalanceRecord balanceRecord, string baseAssetId)
         {
             return (await FillBaseAssetData(
@@ -214,19 +187,6 @@ namespace Lykke.Service.RateCalculator.Services
                 return price;
 
             return GetBestPrice(orderBooks, assetPairId, !buy);
-        }
-
-        private double GetConversionRate(
-            string assetFrom,
-            string assetTo,
-            Dictionary<string, NodeInfo> pricesData)
-        {
-            var convertedAmount = _crossPairsCalculator.GetConversionRate(
-                assetFrom,
-                assetTo,
-                pricesData);
-
-            return convertedAmount;
         }
 
         private double GetCrossPairsAmountInBase(

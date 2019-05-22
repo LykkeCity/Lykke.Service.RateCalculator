@@ -75,13 +75,6 @@ namespace Lykke.Service.RateCalculator.Services
             double amount,
             Dictionary<string, NodeInfo> pricesData)
         {
-            var conversionRate = GetConversionRate(assetFrom, assetTo, pricesData);
-
-            return amount * conversionRate;
-        }
-
-        public double GetConversionRate(string assetFrom, string assetTo, Dictionary<string, NodeInfo> pricesData)
-        {
             var path = GetPath(assetFrom, assetTo);
             if (path == null)
                 return 0;
@@ -90,7 +83,7 @@ namespace Lykke.Service.RateCalculator.Services
             if (Math.Abs(conversionRate) < double.Epsilon)
                 return 0;
 
-            return conversionRate;
+            return amount * conversionRate;
         }
 
         private double InitWeight(string asset1, string asset2)

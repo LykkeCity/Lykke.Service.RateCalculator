@@ -25,18 +25,4 @@
         public string BaseAssetId { get; set; }
         public double? AmountInBase { get; set; }
     }
-
-    public class AssetRequest
-    {
-        public string AssetId { get; set; }
-    }
-
-    public class AssetConversionRate
-    {
-        public string AssetId { get; set; }
-
-        public double ConversionRate { get; set; }
-
-        public string BaseAssetId { get; set; }
-    }
 }
