@@ -1,12 +1,9 @@
-﻿using Autofac;
-using Lykke.Service.MarketProfile.Client;
+﻿using Antares.Service.MarketProfile.Client;
+using Autofac;
+using Lykke.Job.MarketProfile.Contract;
 using Moq;
 using System;
 using System.Collections.Generic;
-using System.Threading;
-using Lykke.Service.MarketProfile.Client.Models;
-using System.Threading.Tasks;
-using Microsoft.Rest;
 
 namespace Lykke.Service.RateCalculator.Tests.Modules
 {
@@ -14,25 +11,22 @@ namespace Lykke.Service.RateCalculator.Tests.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
-            var mpMock = new Mock<ILykkeMarketProfile>();
+            var marketProfile = new Mock<IMarketProfileServiceClient>();
 
-            var mockedHttpResponse = new HttpOperationResponse<IList<AssetPairModel>> {Body = GetFeed()};
-            mpMock
-                .Setup(x => x.ApiMarketProfileGetWithHttpMessagesAsync(
-                    It.IsAny<Dictionary<string, List<string>>>(), 
-                    It.IsAny<CancellationToken>()))
-                .Returns(Task.FromResult(mockedHttpResponse));
+            marketProfile
+                .Setup(x => x.GetAll())
+                .Returns(GetFeed());
 
             builder
-                .RegisterInstance(mpMock.Object)
+                .RegisterInstance(marketProfile.Object)
                 .SingleInstance();
         }
 
-        private IList<AssetPairModel> GetFeed()
+        private List<IAssetPair> GetFeed()
         {
-            return new List<AssetPairModel>
+            return new List<IAssetPair>
             {
-                new AssetPairModel
+                new FakeAssetPair
                 {
                     AssetPair = "BTCUSD",
                     AskPriceTimestamp = DateTime.UtcNow,
@@ -40,7 +34,7 @@ namespace Lykke.Service.RateCalculator.Tests.Modules
                     BidPrice = 2652,
                     AskPrice = 2656.381
                 },
-                new AssetPairModel
+                new FakeAssetPair
                 {
                     AssetPair = "USDCHF",
                     AskPriceTimestamp = DateTime.UtcNow,
@@ -49,6 +43,15 @@ namespace Lykke.Service.RateCalculator.Tests.Modules
                     AskPrice = 0.98599
                 }
             };
+        }
+
+        public class FakeAssetPair : IAssetPair
+        {
+            public string AssetPair { get; set; }
+            public double BidPrice { get; set; }
+            public double AskPrice { get; set; }
+            public DateTime BidPriceTimestamp { get; set; }
+            public DateTime AskPriceTimestamp { get; set; }
         }
     }
 }

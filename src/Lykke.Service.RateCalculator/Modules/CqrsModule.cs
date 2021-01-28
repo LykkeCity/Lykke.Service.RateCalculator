@@ -1,15 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using Autofac;
 using Common.Log;
 using Lykke.Common;
-using Lykke.Common.Log;
 using Lykke.Cqrs;
 using Lykke.Cqrs.Configuration;
 using Lykke.Messaging;
-using Lykke.Messaging.RabbitMq;
 using Lykke.Messaging.Serialization;
 using Lykke.Service.Assets.Client;
 using Lykke.SettingsReader;
+using System.Collections.Generic;
 
 namespace Lykke.Service.RateCalculator.Modules
 {
@@ -29,7 +28,7 @@ namespace Lykke.Service.RateCalculator.Modules
             builder
                 .Register(ctx =>
                 {
-                    var rabbitMqSettings = new RabbitMQ.Client.ConnectionFactory { Uri = _cqrsSettings.RabbitConnectionString };
+                    var rabbitMqSettings = new RabbitMQ.Client.ConnectionFactory { Uri = new Uri(_cqrsSettings.RabbitConnectionString) };
                     var me = new MessagingEngine(
                         _log,
                         new TransportResolver(new Dictionary<string, TransportInfo>
