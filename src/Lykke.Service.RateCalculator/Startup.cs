@@ -64,7 +64,6 @@ namespace Lykke.Service.RateCalculator
                 builder.Populate(services);
 
                 builder.RegisterModule(new ServiceModule(settingsManager, Log));
-                builder.RegisterModule(new CqrsModule(settingsManager, Log));
 
                 ApplicationContainer = builder.Build();
 
