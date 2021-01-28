@@ -1,13 +1,13 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Lykke.Service.MarketProfile.Client.Models;
+﻿using Lykke.Job.MarketProfile.Contract;
 using Lykke.Service.RateCalculator.Core.Domain;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Lykke.Service.RateCalculator.Services
 {
     public static class MappingExtensions
     {
-        public static FeedData ToApiModel(this AssetPairModel src)
+        public static FeedData ToApiModel(this IAssetPair src)
         {
             if (src == null) return null;
 
@@ -20,7 +20,7 @@ namespace Lykke.Service.RateCalculator.Services
             };
         }
 
-        public static Core.Domain.MarketProfile ToApiModel(this IList<AssetPairModel> src)
+        public static Core.Domain.MarketProfile ToApiModel(this IList<IAssetPair> src)
         {
             return new Core.Domain.MarketProfile
             {
