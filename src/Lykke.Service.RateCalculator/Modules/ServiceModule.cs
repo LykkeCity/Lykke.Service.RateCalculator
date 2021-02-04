@@ -11,6 +11,7 @@ using Microsoft.Extensions.Caching.Redis;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using Antares.Service.MarketProfile.Client;
+using Lykke.Common.Log;
 
 namespace Lykke.Service.RateCalculator.Modules
 {
@@ -71,7 +72,10 @@ namespace Lykke.Service.RateCalculator.Modules
 
             builder.Register((x) =>
                 {
-                    var marketProfile = new MarketProfileServiceClient(_settings.CurrentValue.MyNoSqlServer.ReaderUrl, _settings.CurrentValue.MarketProfileServiceClient.ServiceUrl);
+                    var marketProfile = new MarketProfileServiceClient(
+                        _settings.CurrentValue.MyNoSqlServer.ReaderUrl, 
+                        _settings.CurrentValue.MarketProfileServiceClient.ServiceUrl,
+                        x.Resolve<ILogFactory>());
                     marketProfile.Start();
 
                     return marketProfile;
