@@ -71,8 +71,7 @@ namespace Lykke.Service.RateCalculator.Modules
                 {
                     var marketProfile = new MarketProfileServiceClient(
                         _settings.CurrentValue.MyNoSqlServer.ReaderUrl, 
-                        _settings.CurrentValue.MarketProfileServiceClient.ServiceUrl,
-                        _log);
+                        _settings.CurrentValue.MarketProfileServiceClient.ServiceUrl);
                     marketProfile.Start();
 
                     return marketProfile;
