@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Antares.Service.MarketProfile.Client;
 using Common;
 using Common.Log;
 using Lykke.Service.Assets.Client.Models;
 using Lykke.Service.Assets.Client.Models.Extensions;
 using Lykke.Service.Assets.Client.ReadModels;
-using Lykke.Service.MarketProfile.Client;
 using Lykke.Service.RateCalculator.Core.Domain;
 using Lykke.Service.RateCalculator.Core.Services;
 using MoreLinq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Lykke.Service.RateCalculator.Services
 {
@@ -20,7 +20,7 @@ namespace Lykke.Service.RateCalculator.Services
         private readonly IAssetPairsReadModelRepository _assetPairsReadModelRepository;
         private readonly IAssetsReadModelRepository _assetsReadModelRepository;
         private readonly IOrderBooksService _orderBooksService;
-        private readonly ILykkeMarketProfile _marketProfileServiceClient;
+        private readonly IMarketProfileServiceClient _marketProfileServiceClient;
         private readonly CrossPairsCalculator _crossPairsCalculator;
 
         public RateCalculatorService(
@@ -28,7 +28,7 @@ namespace Lykke.Service.RateCalculator.Services
             IAssetPairsReadModelRepository assetPairsReadModelRepository,
             IAssetsReadModelRepository assetsReadModelRepository,
             IOrderBooksService orderBooksService,
-            ILykkeMarketProfile marketProfileServiceClient)
+            IMarketProfileServiceClient marketProfileServiceClient)
         {
             _log = log;
             _assetPairsReadModelRepository = assetPairsReadModelRepository;
@@ -338,9 +338,9 @@ namespace Lykke.Service.RateCalculator.Services
             return true;
         }
 
-        private async Task<Core.Domain.MarketProfile> GetMarketProfileRemoteAsync()
+        private Task<Core.Domain.MarketProfile> GetMarketProfileRemoteAsync()
         {
-            return (await _marketProfileServiceClient.ApiMarketProfileGetAsync()).ToApiModel();
+            return Task.FromResult(_marketProfileServiceClient.GetAll().ToApiModel());
         }
 
         private bool IsInverted(Assets.Client.Models.v3.AssetPair assetPair, string targetAsset)

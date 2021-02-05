@@ -9,6 +9,8 @@ namespace Lykke.Service.RateCalculator.Core
         public SlackNotificationsSettings SlackNotifications { get; set; }
         public MarketProfileServiceClientSettings MarketProfileServiceClient { get; set; }
         public AssetsServiceClientSettings AssetsServiceClient { get; set; }
+
+        public MyNoSqlSettings MyNoSqlServer { get; set; }
     }
 
     public class RateCalculatorSettings
@@ -73,5 +75,10 @@ namespace Lykke.Service.RateCalculator.Core
         public string ServiceUrl { get; set; }
 
         public TimeSpan ExpirationPeriod { get; set; }
+    }
+
+    public class MyNoSqlSettings
+    {
+        public string ReaderUrl { get; set; }
     }
 }

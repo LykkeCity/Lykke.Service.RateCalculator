@@ -1,9 +1,7 @@
-﻿using System;
-using Autofac;
+﻿using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Common.Log;
 using Lykke.Service.Assets.Client;
-using Lykke.Service.MarketProfile.Client;
 using Lykke.Service.RateCalculator.Core;
 using Lykke.Service.RateCalculator.Core.Services;
 using Lykke.Service.RateCalculator.Services;
@@ -11,6 +9,9 @@ using Lykke.SettingsReader;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Redis;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using Antares.Service.MarketProfile.Client;
+using Lykke.Common.Log;
 
 namespace Lykke.Service.RateCalculator.Modules
 {
@@ -66,9 +67,19 @@ namespace Lykke.Service.RateCalculator.Modules
                 .As<IOrderBooksService>()
                 .SingleInstance();
 
-            builder.RegisterType<LykkeMarketProfile>()
-                .As<ILykkeMarketProfile>()
-                .WithParameter("baseUri", new Uri(_settings.CurrentValue.MarketProfileServiceClient.ServiceUrl));
+            builder.Register((x) =>
+                {
+                    var marketProfile = new MarketProfileServiceClient(
+                        _settings.CurrentValue.MyNoSqlServer.ReaderUrl, 
+                        _settings.CurrentValue.MarketProfileServiceClient.ServiceUrl,
+                        x.Resolve<ILogFactory>());
+                    marketProfile.Start();
+
+                    return marketProfile;
+                })
+                .As<IMarketProfileServiceClient>()
+                .SingleInstance()
+                .AutoActivate();
 
             builder.Populate(_serviceCollection);
         }
